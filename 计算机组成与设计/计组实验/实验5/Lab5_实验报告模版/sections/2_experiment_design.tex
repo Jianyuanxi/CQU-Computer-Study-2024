@@ -1,0 +1,185 @@
+\section{实验设计}
+
+\subsection{整体架构}
+
+本实验SoC系统采用冯·诺依曼结构，指令和数据共用一块AXI RAM。CPU核（MIPS Core）通过类SRAM接口与Cache通信，Cache再经cpu\_axi\_interface转换为AXI协议与内存交互，层次如下：
+
+\begin{center}
+\texttt{MIPS Core $\xrightarrow{\text{类SRAM}}$ Cache（i\_cache + d\_cache）$\xrightarrow{\text{类SRAM}}$ cpu\_axi\_interface $\xrightarrow{\text{AXI}}$ AXI RAM}
+\end{center}
+
+与前几个实验的哈佛结构不同，本实验中指令和数据共享同一块内存，通过AXI Crossbar分流。
+
+\subsection{Cache基本结构}
+
+本实验实现的是直接映射（Direct Mapped）Cache，规格如表\ref{tab:cache_spec}所示。
+
+\begin{table}[htp]
+\caption{Cache规格参数}
+\label{tab:cache_spec}
+\begin{center}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{参数} & \textbf{i\_cache} & \textbf{d\_cache} \\ \hline\hline
+总大小        & 4 KB & 4 KB \\ \hline
+Cache Line大小 & 1 Word（4字节） & 1 Word（4字节） \\ \hline
+Cache Line数  & 1024 & 1024 \\ \hline
+Index宽度     & 10 bit & 10 bit \\ \hline
+Offset宽度    & 2 bit & 2 bit \\ \hline
+Tag宽度       & 20 bit & 20 bit \\ \hline
+写策略        & 只读，不涉及 & Write Through + Non-Write Allocate \\ \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+32位地址划分方式：\texttt{[31:12] Tag（20位） | [11:2] Index（10位） | [1:0] Offset（2位）}
+
+Cache存储阵列使用LUT-RAM实现（reg数组），包含valid、tag\_arr、data\_arr三个阵列。
+
+\subsection{类SRAM接口协议}
+
+CPU与Cache之间采用类SRAM握手协议，关键信号如表\ref{tab:sram_sig}所示。
+
+\begin{table}[htp]
+\caption{类SRAM接口信号说明}
+\label{tab:sram_sig}
+\begin{center}
+\begin{tabular}{|l|l|p{7cm}|}
+\hline
+\textbf{信号名} & \textbf{方向} & \textbf{功能描述} \\ \hline\hline
+req      & CPU→Cache & 请求有效，高电平表示发出一次访问请求 \\ \hline
+wr       & CPU→Cache & 写使能：0为读，1为写 \\ \hline
+addr     & CPU→Cache & 访问地址（32位） \\ \hline
+size     & CPU→Cache & 访问大小：00=字节，01=半字，10=字 \\ \hline
+wdata    & CPU→Cache & 写数据 \\ \hline
+addr\_ok & Cache→CPU & Cache已接收地址，握手完成 \\ \hline
+data\_ok & Cache→CPU & 读数据有效（读命中/缺失填充完成）或写操作完成 \\ \hline
+rdata    & Cache→CPU & 读返回数据 \\ \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\textbf{读命中}时：Cache在同一周期同时拉高addr\_ok和data\_ok，立即返回Cache中的数据，零延迟。
+
+\textbf{读缺失}时：Cache进入RM状态，向AXI发出读请求，等待内存返回数据并填充Cache line后，再给CPU返回data\_ok。
+
+\textbf{写操作}（写直通）：无论命中还是缺失，均进入WM状态，向内存发出写请求；若命中，同步更新Cache line。
+
+\subsection{状态机设计}
+
+\subsubsection{i\_cache状态机}
+
+i\_cache为只读Cache，FSM只有两个状态：
+
+\begin{itemize}
+    \item \textbf{IDLE}：等待CPU请求。若req有效且命中，直接在IDLE中完成（addr\_ok/data\_ok同时拉高）；若缺失则转入RM。
+    \item \textbf{RM（Read Miss）}：向AXI发送读请求，等待cache\_inst\_data\_ok后填充Cache并返回CPU，回到IDLE。
+\end{itemize}
+
+\subsubsection{d\_cache状态机}
+
+d\_cache支持读写，FSM有三个状态：
+
+\begin{itemize}
+    \item \textbf{IDLE}：等待CPU请求。读命中直接完成（不离开IDLE）；读缺失转RM；写操作（无论命中与否）转WM。
+    \item \textbf{RM（Read Miss）}：向AXI发送读请求，data\_ok后填充Cache line并返回CPU，回到IDLE。
+    \item \textbf{WM（Write Memory）}：向AXI发送写请求（cache\_data\_wr=1），data\_ok后若命中则同步更新Cache line，回到IDLE。
+\end{itemize}
+
+\subsection{i\_cache接口定义}
+
+\begin{table}[htp]
+\caption{i\_cache模块接口定义}
+\begin{center}
+\begin{tabular}{|l|l|l|p{5.5cm}|}
+\hline
+\textbf{信号名} & \textbf{方向} & \textbf{位宽} & \textbf{功能描述} \\ \hline\hline
+clk, rst              & Input  & 1-bit  & 时钟与同步复位 \\ \hline
+cpu\_inst\_req        & Input  & 1-bit  & CPU侧指令访问请求 \\ \hline
+cpu\_inst\_addr       & Input  & 32-bit & CPU侧指令地址 \\ \hline
+cpu\_inst\_rdata      & Output & 32-bit & 返回给CPU的指令数据 \\ \hline
+cpu\_inst\_addr\_ok   & Output & 1-bit  & 地址握手完成 \\ \hline
+cpu\_inst\_data\_ok   & Output & 1-bit  & 数据有效（命中或缺失填充完成）\\ \hline
+cache\_inst\_req      & Output & 1-bit  & 向AXI发出的读请求 \\ \hline
+cache\_inst\_addr     & Output & 32-bit & 向AXI发出的地址 \\ \hline
+cache\_inst\_rdata    & Input  & 32-bit & AXI返回的指令数据 \\ \hline
+cache\_inst\_addr\_ok & Input  & 1-bit  & AXI地址握手完成 \\ \hline
+cache\_inst\_data\_ok & Input  & 1-bit  & AXI数据返回完成 \\ \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\subsection{d\_cache接口定义}
+
+\begin{table}[htp]
+\caption{d\_cache模块接口定义}
+\begin{center}
+\begin{tabular}{|l|l|l|p{5.5cm}|}
+\hline
+\textbf{信号名} & \textbf{方向} & \textbf{位宽} & \textbf{功能描述} \\ \hline\hline
+clk, rst              & Input  & 1-bit  & 时钟与同步复位 \\ \hline
+cpu\_data\_req        & Input  & 1-bit  & CPU侧数据访问请求 \\ \hline
+cpu\_data\_wr         & Input  & 1-bit  & 写使能（0=读，1=写）\\ \hline
+cpu\_data\_size       & Input  & 2-bit  & 访问大小（00=字节，01=半字，10=字）\\ \hline
+cpu\_data\_addr       & Input  & 32-bit & CPU侧数据地址 \\ \hline
+cpu\_data\_wdata      & Input  & 32-bit & CPU侧写数据 \\ \hline
+cpu\_data\_rdata      & Output & 32-bit & 返回给CPU的读数据 \\ \hline
+cpu\_data\_addr\_ok   & Output & 1-bit  & 地址握手完成 \\ \hline
+cpu\_data\_data\_ok   & Output & 1-bit  & 读数据有效或写操作完成 \\ \hline
+cache\_data\_req      & Output & 1-bit  & 向AXI发出的请求 \\ \hline
+cache\_data\_wr       & Output & 1-bit  & AXI侧写使能 \\ \hline
+cache\_data\_size     & Output & 2-bit  & AXI侧访问大小 \\ \hline
+cache\_data\_addr     & Output & 32-bit & AXI侧地址 \\ \hline
+cache\_data\_wdata    & Output & 32-bit & AXI侧写数据 \\ \hline
+cache\_data\_rdata    & Input  & 32-bit & AXI返回的读数据 \\ \hline
+cache\_data\_addr\_ok & Input  & 1-bit  & AXI地址握手完成 \\ \hline
+cache\_data\_data\_ok & Input  & 1-bit  & AXI数据返回完成 \\ \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\subsection{关键逻辑实现}
+
+\subsubsection{命中判断}
+
+\begin{verbatim}
+wire hit = valid[req_index] & (tag_arr[req_index] == req_tag);
+\end{verbatim}
+
+\subsubsection{地址锁存（防止CPU撤销req后状态机死锁）}
+
+进入RM/WM状态时立即锁存请求地址、大小、写数据：
+\begin{verbatim}
+if (is_read & ~hit) begin
+    state      <= RM;
+    save_index <= req_index;
+    save_tag   <= req_tag;
+    save_addr  <= cpu_data_addr;
+    save_size  <= cpu_data_size;
+end
+\end{verbatim}
+
+\subsubsection{写掩码（支持sb/sh/sw）}
+
+\begin{verbatim}
+wire [3:0] wmask =
+    (save_size==2'b00) ?
+        (save_addr[1] ? (save_addr[0] ? 4'b1000 : 4'b0100)
+                      : (save_addr[0] ? 4'b0010 : 4'b0001)) :
+    (save_size==2'b01) ?
+        (save_addr[1] ? 4'b1100 : 4'b0011) : 4'b1111;
+\end{verbatim}
+
+\subsubsection{addr\_rcv握手（防止重复发送AXI请求）}
+
+\begin{verbatim}
+always @(posedge clk) begin
+    if (rst)
+        addr_rcv <= 1'b0;
+    else if (state == IDLE)
+        addr_rcv <= 1'b0;        // 回到IDLE时清零
+    else if (cache_data_req & cache_data_addr_ok)
+        addr_rcv <= 1'b1;
+end
+assign cache_data_req = (state==RM || state==WM) & ~addr_rcv;
+\end{verbatim}

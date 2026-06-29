@@ -1,0 +1,278 @@
+
+<style>
+h2.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+.tab{padding:6px 14px;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary);transition:all .15s}
+.tab.active{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-info);font-weight:500}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:12px}
+.badge{display:inline-block;padding:2px 10px;border-radius:var(--border-radius-md);font-size:12px;font-weight:500;margin-bottom:8px}
+.badge-r{background:#E6F1FB;color:#0C447C}
+.badge-i{background:#EAF3DE;color:#27500A}
+.badge-j{background:#FAEEDA;color:#633806}
+.title{font-size:16px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.desc{font-size:13px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:12px}
+.instr-box{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;margin-bottom:10px}
+.instr-row{display:flex;gap:4px;align-items:stretch;margin-bottom:6px}
+.instr-row:last-child{margin-bottom:0}
+.field{border-radius:4px;padding:6px 4px;text-align:center;font-size:12px;font-weight:500;display:flex;flex-direction:column;justify-content:center;min-height:48px}
+.field .fname{font-size:10px;opacity:.75;margin-bottom:2px}
+.field .fval{font-size:12px;font-weight:500}
+.f-op{background:#B5D4F4;color:#042C53;flex:0 0 52px}
+.f-rs1{background:#C0DD97;color:#173404;flex:0 0 44px}
+.f-rs2{background:#C0DD97;color:#173404;flex:0 0 44px}
+.f-rd{background:#9FE1CB;color:#04342C;flex:0 0 44px}
+.f-fn{background:#D3D1C7;color:#2C2C2A;flex:0 0 44px}
+.f-imm{background:#FAC775;color:#412402;flex:1}
+.f-off{background:#FAC775;color:#412402;flex:1}
+.f-jt{background:#F5C4B3;color:#4A1B0C;flex:1}
+.arrow-row{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--color-text-secondary);margin-top:6px}
+.arr-line{flex:1;height:1px;background:var(--color-border-secondary);position:relative}
+.arr-line::after{content:"▶";position:absolute;right:-6px;top:-7px;font-size:10px;color:var(--color-text-secondary)}
+.highlight-box{border:1.5px solid;border-radius:var(--border-radius-md);padding:8px 12px;font-size:13px;line-height:1.6;margin-top:8px}
+.hl-r{border-color:#85B7EB;background:#E6F1FB;color:#0C447C}
+.hl-i{border-color:#97C459;background:#EAF3DE;color:#27500A}
+.hl-j{border-color:#EF9F27;background:#FAEEDA;color:#633806}
+.example{font-size:12px;font-family:var(--font-mono);background:var(--color-background-tertiary);border-radius:4px;padding:6px 10px;margin-top:8px;color:var(--color-text-primary)}
+.panel{display:none}
+.panel.active{display:block}
+.mode-item{padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;gap:10px;align-items:flex-start}
+.mode-item:last-child{border-bottom:none}
+.mode-num{font-size:13px;font-weight:500;color:var(--color-text-secondary);min-width:18px}
+.mode-body{flex:1}
+.mode-title{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:2px}
+.mode-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.6}
+.mem-diagram{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.mem-row{display:flex;align-items:center;gap:8px;font-size:12px}
+.mem-cell{border:0.5px solid var(--color-border-secondary);border-radius:4px;padding:5px 10px;font-family:var(--font-mono);min-width:80px;text-align:center;color:var(--color-text-primary);background:var(--color-background-secondary)}
+.mem-cell.active{background:#B5D4F4;border-color:#85B7EB;color:#042C53;font-weight:500}
+.mem-label{color:var(--color-text-secondary);font-size:11px}
+</style>
+
+<h2 class="sr-only">RISC-V 五种寻址方式交互讲解</h2>
+<div style="padding:1rem 0">
+
+<div style="margin-bottom:1rem">
+  <div style="font-size:18px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px">五种寻址方式</div>
+  <div style="font-size:13px;color:var(--color-text-secondary)">点击下方标签，逐一了解每种寻址方式</div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="show('r0')">🔵 R型 — 寄存器寻址</button>
+  <button class="tab" onclick="show('i1')">🟢 I型 — 立即数寻址</button>
+  <button class="tab" onclick="show('i2')">🟡 I型 — 基址偏移寻址</button>
+  <button class="tab" onclick="show('i3')">🟠 I型 — PC相对寻址</button>
+  <button class="tab" onclick="show('j4')">🔴 J型 — 伪直接寻址</button>
+</div>
+
+<!-- R型 寄存器寻址 -->
+<div id="r0" class="panel active">
+  <div class="card">
+    <span class="badge badge-r">R 型指令</span>
+    <div class="title">1. 寄存器寻址</div>
+    <div class="desc">操作数全部来自寄存器，结果也写回寄存器。三个字段分别指定两个源寄存器和一个目标寄存器。</div>
+    <div class="instr-box">
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:6px">指令格式（32位）</div>
+      <div class="instr-row">
+        <div class="field f-op"><span class="fname">opcode</span><span class="fval">7位</span></div>
+        <div class="field f-rd"><span class="fname">rd</span><span class="fval">5位</span></div>
+        <div class="field f-fn"><span class="fname">funct3</span><span class="fval">3位</span></div>
+        <div class="field f-rs1"><span class="fname">rs1</span><span class="fval">5位</span></div>
+        <div class="field f-rs2"><span class="fname">rs2</span><span class="fval">5位</span></div>
+        <div class="field f-fn"><span class="fname">funct7</span><span class="fval">7位</span></div>
+      </div>
+    </div>
+    <div class="highlight-box hl-r">
+      <b>寻址原理：</b> 指令中的 rs1、rs2 字段直接是寄存器编号（0~31）。CPU 从寄存器堆中读出两个数，运算后存入 rd 寄存器。操作数就在 CPU 内部，速度最快。
+    </div>
+    <div class="example">add x1, x2, x3   # x1 = x2 + x3（完全在寄存器中）</div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px">32个通用寄存器</div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:10px">RISC-V 有 x0~x31 共 32 个寄存器，每个 64 位（RV64）</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">
+      <div style="font-size:11px;font-family:var(--font-mono);text-align:center;padding:4px;border:0.5px solid var(--color-border-tertiary);border-radius:4px;background:#B5D4F4;color:#042C53">x0=0</div>
+      <div style="font-size:11px;font-family:var(--font-mono);text-align:center;padding:4px;border:0.5px solid var(--color-border-tertiary);border-radius:4px;background:#B5D4F4;color:#042C53">x1=ra</div>
+      <div style="font-size:11px;font-family:var(--font-mono);text-align:center;padding:4px;border:0.5px solid var(--color-border-tertiary);border-radius:4px;background:#B5D4F4;color:#042C53">x2=sp</div>
+      <div style="font-size:11px;font-family:var(--font-mono);text-align:center;padding:4px;border:0.5px solid var(--color-border-tertiary);border-radius:4px;background:#85B7EB;color:#042C53">…</div>
+    </div>
+    <div style="font-size:11px;color:var(--color-text-secondary);margin-top:6px">x0 恒为 0，无法修改；x1 通常存返回地址；x2 是栈指针</div>
+  </div>
+</div>
+
+<!-- I型 立即数寻址 -->
+<div id="i1" class="panel">
+  <div class="card">
+    <span class="badge badge-i">I 型指令</span>
+    <div class="title">2. 立即数寻址</div>
+    <div class="desc">操作数之一直接编码在指令中，称为"立即数"。无需访问内存或额外寄存器，适合常数运算。</div>
+    <div class="instr-box">
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:6px">指令格式（32位）</div>
+      <div class="instr-row">
+        <div class="field f-op"><span class="fname">opcode</span><span class="fval">7位</span></div>
+        <div class="field f-rd"><span class="fname">rd</span><span class="fval">5位</span></div>
+        <div class="field f-fn"><span class="fname">funct3</span><span class="fval">3位</span></div>
+        <div class="field f-rs1"><span class="fname">rs1</span><span class="fval">5位</span></div>
+        <div class="field f-imm"><span class="fname">imm[11:0]  立即数</span><span class="fval">12位</span></div>
+      </div>
+    </div>
+    <div class="highlight-box hl-i">
+      <b>寻址原理：</b> 指令本身就携带了一个 12 位常数（符号扩展到 64 位）。CPU 直接使用这个数字作为操作数，不用去取内存或其他寄存器。
+    </div>
+    <div class="example">addi x1, x2, 100   # x1 = x2 + 100（100就写在指令里）</div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;font-weight:500;margin-bottom:6px">直观理解</div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <div style="border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:10px 14px;font-size:12px;text-align:center;background:var(--color-background-secondary)">
+        <div style="color:var(--color-text-secondary);margin-bottom:4px">指令中的立即数</div>
+        <div style="font-family:var(--font-mono);font-size:16px;font-weight:500;color:#27500A">100</div>
+      </div>
+      <div style="font-size:20px;color:var(--color-text-secondary)">→</div>
+      <div style="border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:10px 14px;font-size:12px;text-align:center;background:#EAF3DE">
+        <div style="color:#27500A;margin-bottom:4px">直接用于 ALU</div>
+        <div style="font-family:var(--font-mono);font-size:16px;font-weight:500;color:#27500A">+100</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--color-text-secondary);margin-top:8px">12位能表示 -2048 ~ +2047 的整数，常用于循环计数、地址偏移等</div>
+  </div>
+</div>
+
+<!-- I型 基址偏移寻址 -->
+<div id="i2" class="panel">
+  <div class="card">
+    <span class="badge badge-i">I 型指令</span>
+    <div class="title">3. 基址偏移寻址（Base + Offset）</div>
+    <div class="desc">用于访问内存。实际内存地址 = 基址寄存器的值 + 指令中的偏移量（立即数）。适合访问数组、结构体字段。</div>
+    <div class="instr-box">
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:6px">指令格式（同 I 型）</div>
+      <div class="instr-row">
+        <div class="field f-op"><span class="fname">opcode</span><span class="fval">7位</span></div>
+        <div class="field f-rd"><span class="fname">rd</span><span class="fval">5位</span></div>
+        <div class="field f-fn"><span class="fname">funct3</span><span class="fval">3位</span></div>
+        <div class="field f-rs1"><span class="fname">base</span><span class="fval">5位</span></div>
+        <div class="field f-off"><span class="fname">offset  偏移量</span><span class="fval">12位</span></div>
+      </div>
+    </div>
+    <div class="highlight-box hl-i">
+      <b>寻址原理：</b> rs1（基址寄存器）+ imm（偏移量）= 内存地址，再从该地址读取数据。
+    </div>
+    <div class="example">ld x1, 8(x2)   # 读取地址 (x2 + 8) 处的数据到 x1</div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;font-weight:500;margin-bottom:10px">内存访问示意</div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">假设 x2 = 1000，执行 <code>ld x1, 8(x2)</code></div>
+    <div class="mem-diagram">
+      <div class="mem-row">
+        <div class="mem-cell" style="font-size:11px">地址 1000</div>
+        <div class="mem-label">← x2（基址）</div>
+      </div>
+      <div class="mem-row">
+        <div class="mem-cell" style="font-size:11px">地址 1004</div>
+        <div class="mem-label"></div>
+      </div>
+      <div class="mem-row">
+        <div class="mem-cell active" style="font-size:11px">地址 1008</div>
+        <div class="mem-label">← 实际访问（1000+8）✓</div>
+      </div>
+      <div class="mem-row">
+        <div class="mem-cell" style="font-size:11px">地址 1012</div>
+        <div class="mem-label"></div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--color-text-secondary);margin-top:8px">常用于读写数组：x2指向数组开头，偏移量选择第几个元素</div>
+  </div>
+</div>
+
+<!-- PC相对寻址 -->
+<div id="i3" class="panel">
+  <div class="card">
+    <span class="badge badge-i">I / B / S 型指令</span>
+    <div class="title">4. PC相对寻址</div>
+    <div class="desc">目标地址 = 当前 PC（程序计数器）+ 符号扩展的偏移量。用于条件分支跳转，跳转范围是以当前指令为中心的±一定范围。</div>
+    <div class="instr-box">
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:6px">核心公式</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <div style="background:#FAC775;color:#412402;border-radius:var(--border-radius-md);padding:8px 14px;font-size:13px;font-weight:500;font-family:var(--font-mono)">目标地址</div>
+        <div style="color:var(--color-text-secondary);font-size:16px">=</div>
+        <div style="background:#B5D4F4;color:#042C53;border-radius:var(--border-radius-md);padding:8px 14px;font-size:13px;font-weight:500;font-family:var(--font-mono)">PC</div>
+        <div style="color:var(--color-text-secondary);font-size:16px">+</div>
+        <div style="background:#C0DD97;color:#173404;border-radius:var(--border-radius-md);padding:8px 14px;font-size:13px;font-weight:500;font-family:var(--font-mono)">offset×2</div>
+      </div>
+    </div>
+    <div class="highlight-box" style="border-color:#85B7EB;background:#E6F1FB;color:#0C447C;margin-top:10px">
+      <b>为什么用PC相对？</b> 程序加载到内存的位置可能不固定，但跳转指令和目标往往在附近。用相对偏移，代码搬到哪里都能正确跳转（位置无关代码）。
+    </div>
+    <div class="example">beq x1, x2, 16   # 若x1==x2，跳转到 PC+16 的位置</div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;font-weight:500;margin-bottom:8px">跳转示意</div>
+    <div style="position:relative">
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:11px;font-family:var(--font-mono);background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:4px;padding:5px 10px;min-width:70px;text-align:center;color:var(--color-text-secondary)">addr 1000</div>
+          <div style="font-size:11px;color:var(--color-text-secondary)">...</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:11px;font-family:var(--font-mono);background:#B5D4F4;border:0.5px solid #85B7EB;border-radius:4px;padding:5px 10px;min-width:70px;text-align:center;color:#042C53;font-weight:500">addr 1004 ←PC</div>
+          <div style="font-size:11px;color:#0C447C;font-weight:500">beq x1,x2,8 ← 当前指令</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:11px;font-family:var(--font-mono);background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:4px;padding:5px 10px;min-width:70px;text-align:center;color:var(--color-text-secondary)">addr 1008</div>
+          <div style="font-size:11px;color:var(--color-text-secondary)">（不跳时下一条）</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:11px;font-family:var(--font-mono);background:#C0DD97;border:0.5px solid #97C459;border-radius:4px;padding:5px 10px;min-width:70px;text-align:center;color:#173404;font-weight:500">addr 1012</div>
+          <div style="font-size:11px;color:#27500A;font-weight:500">← 跳转目标（1004+8）✓</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- J型 伪直接寻址 -->
+<div id="j4" class="panel">
+  <div class="card">
+    <span class="badge badge-j">J 型指令</span>
+    <div class="title">5. 伪直接寻址（Pseudo-direct）</div>
+    <div class="desc">用于无条件跳转（JAL）。目标地址大部分位来自指令中的立即数，高位来自当前 PC，因此称"伪直接"——看起来像直接给地址，实则仍有PC的参与。</div>
+    <div class="instr-box">
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:6px">J 型指令格式（32位）</div>
+      <div class="instr-row">
+        <div class="field f-op"><span class="fname">opcode</span><span class="fval">7位</span></div>
+        <div class="field f-rd"><span class="fname">rd</span><span class="fval">5位</span></div>
+        <div class="field f-jt"><span class="fname">imm[20|10:1|11|19:12]  目标偏移</span><span class="fval">20位</span></div>
+      </div>
+    </div>
+    <div class="highlight-box hl-j">
+      <b>寻址原理：</b> 目标地址 = PC + 符号扩展(imm×2)，imm 有 20 位，跳转范围最远可达 ±1MB。同时将 PC+4 存入 rd（返回地址），用于函数调用。
+    </div>
+    <div class="example">jal x1, func   # 跳到func，返回地址存x1（ra寄存器）</div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;font-weight:500;margin-bottom:8px">与PC相对寻址的区别</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div style="background:#EAF3DE;color:#27500A;border-radius:4px;padding:3px 8px;font-size:11px;font-weight:500;white-space:nowrap">PC相对</div>
+        <div style="font-size:12px;color:var(--color-text-secondary)">用于条件分支（beq/bne），偏移量12位，范围±4KB，跳近处</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div style="background:#FAEEDA;color:#633806;border-radius:4px;padding:3px 8px;font-size:11px;font-weight:500;white-space:nowrap">伪直接</div>
+        <div style="font-size:12px;color:var(--color-text-secondary)">用于无条件跳转（jal），偏移量20位，范围±1MB，跳更远的函数</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--color-text-secondary);margin-top:10px;padding-top:10px;border-top:0.5px solid var(--color-border-tertiary)">若函数超过1MB怎么办？用 JALR 指令（I型）：先 auipc 加载高20位到寄存器，再用寄存器+偏移量，组合出完整64位地址。</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function show(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+</script>

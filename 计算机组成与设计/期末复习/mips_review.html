@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIPS 汇编速查手册</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Serif+SC:wght@400;700;900&family=Space+Grotesk:wght@300;500;700&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --bg2: #13161e;
+    --bg3: #1a1e2a;
+    --border: #252a38;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --blue: #60a5fa;
+    --teal: #2dd4bf;
+    --amber: #fbbf24;
+    --coral: #f87171;
+    --purple: #a78bfa;
+    --green: #4ade80;
+    --pink: #f472b6;
+    --code-bg: #0a0c12;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', 'Noto Serif SC', sans-serif;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    position: relative;
+    padding: 72px 48px 56px;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 60% -10%, #1e3a5f55, transparent),
+                radial-gradient(ellipse 50% 40% at 90% 80%, #2d1b6944, transparent);
+  }
+  .hero-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--teal);
+    border: 1px solid var(--teal);
+    padding: 4px 12px;
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, #e2e8f0 30%, var(--blue) 70%, var(--teal));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .hero p {
+    color: var(--muted);
+    font-size: 1rem;
+    max-width: 560px;
+    position: relative;
+  }
+  .hero-deco {
+    position: absolute;
+    right: 48px; top: 40px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #334155;
+    line-height: 1.8;
+    text-align: right;
+  }
+
+  /* ── Layout ── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 48px 32px; }
+
+  /* ── Section ── */
+  .section { margin-bottom: 64px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 28px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+  .section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .section-badge {
+    margin-left: auto;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid;
+  }
+  .badge-blue { color: var(--blue); border-color: var(--blue)33; background: var(--blue)11; }
+  .badge-teal { color: var(--teal); border-color: var(--teal)33; background: var(--teal)11; }
+  .badge-amber { color: var(--amber); border-color: var(--amber)33; background: var(--amber)11; }
+  .badge-coral { color: var(--coral); border-color: var(--coral)33; background: var(--coral)11; }
+
+  /* ── Card Grid ── */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .card-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .card.blue::before { background: linear-gradient(90deg, var(--blue), transparent); }
+  .card.teal::before { background: linear-gradient(90deg, var(--teal), transparent); }
+  .card.amber::before { background: linear-gradient(90deg, var(--amber), transparent); }
+  .card.coral::before { background: linear-gradient(90deg, var(--coral), transparent); }
+  .card.purple::before { background: linear-gradient(90deg, var(--purple), transparent); }
+  .card.green::before { background: linear-gradient(90deg, var(--green), transparent); }
+
+  .card-title {
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .card.blue .card-title { color: var(--blue); }
+  .card.teal .card-title { color: var(--teal); }
+  .card.amber .card-title { color: var(--amber); }
+  .card.coral .card-title { color: var(--coral); }
+  .card.purple .card-title { color: var(--purple); }
+  .card.green .card-title { color: var(--green); }
+
+  /* ── Code ── */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.9;
+    overflow-x: auto;
+    margin: 12px 0;
+  }
+  .kw { color: var(--coral); }
+  .reg { color: var(--blue); }
+  .imm { color: var(--amber); }
+  .cmt { color: #475569; font-style: italic; }
+  .hl { background: #fbbf2415; border-left: 2px solid var(--amber); padding-left: 8px; display: block; margin-left: -8px; }
+  .err { background: #f8717115; border-left: 2px solid var(--coral); padding-left: 8px; display: block; margin-left: -8px; }
+  .ok { background: #4ade8015; border-left: 2px solid var(--green); padding-left: 8px; display: block; margin-left: -8px; }
+
+  /* ── Table ── */
+  .table-wrap { overflow-x: auto; margin: 12px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  th {
+    background: var(--bg3);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border)88;
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg3); }
+  .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: var(--blue); }
+  .tag-blue { color: var(--blue); }
+  .tag-teal { color: var(--teal); }
+  .tag-amber { color: var(--amber); }
+  .tag-coral { color: var(--coral); }
+  .tag-purple { color: var(--purple); }
+  .tag-green { color: var(--green); }
+  .tag-muted { color: var(--muted); }
+
+  /* ── Trap / Tip boxes ── */
+  .trap, .tip, .answer {
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 14px 0;
+    font-size: 0.9rem;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .trap { background: #f8717111; border: 1px solid #f8717133; }
+  .tip  { background: #2dd4bf11; border: 1px solid #2dd4bf33; }
+  .answer { background: #4ade8011; border: 1px solid #4ade8033; }
+  .trap-icon, .tip-icon, .answer-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── Pill ── */
+  .pill {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin: 2px;
+  }
+  .pill-blue { background: var(--blue)18; color: var(--blue); border: 1px solid var(--blue)33; }
+  .pill-teal { background: var(--teal)18; color: var(--teal); border: 1px solid var(--teal)33; }
+  .pill-amber { background: var(--amber)18; color: var(--amber); border: 1px solid var(--amber)33; }
+  .pill-coral { background: var(--coral)18; color: var(--coral); border: 1px solid var(--coral)33; }
+  .pill-purple { background: var(--purple)18; color: var(--purple); border: 1px solid var(--purple)33; }
+
+  /* ── Bit diagram ── */
+  .bit-row {
+    display: flex;
+    gap: 2px;
+    margin: 10px 0;
+    align-items: stretch;
+  }
+  .bit-cell {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 4px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .bit-cell .bit-label { font-size: 0.65rem; color: var(--muted); display: block; }
+  .bit-cell .bit-val { font-size: 0.8rem; font-weight: 700; display: block; }
+  .bit-cell.bc-blue { border-color: var(--blue)55; background: var(--blue)10; }
+  .bit-cell.bc-blue .bit-val { color: var(--blue); }
+  .bit-cell.bc-purple { border-color: var(--purple)55; background: var(--purple)10; }
+  .bit-cell.bc-purple .bit-val { color: var(--purple); }
+  .bit-cell.bc-teal { border-color: var(--teal)55; background: var(--teal)10; }
+  .bit-cell.bc-teal .bit-val { color: var(--teal); }
+  .bit-cell.bc-amber { border-color: var(--amber)55; background: var(--amber)10; }
+  .bit-cell.bc-amber .bit-val { color: var(--amber); }
+  .bit-cell.bc-coral { border-color: var(--coral)55; background: var(--coral)10; }
+  .bit-cell.bc-coral .bit-val { color: var(--coral); }
+
+  /* ── Endian vis ── */
+  .endian-wrap { display: flex; gap: 24px; margin: 14px 0; flex-wrap: wrap; }
+  .endian-col { flex: 1; min-width: 200px; }
+  .endian-title { font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; letter-spacing: 1px; margin-bottom: 8px; }
+  .endian-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0;
+  }
+  .endian-addr { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--muted); width: 56px; flex-shrink: 0; }
+  .endian-byte {
+    flex: 1;
+    padding: 7px 12px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: center;
+    border: 1px solid;
+  }
+
+  /* ── Two-col ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  /* ── Footer ── */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  @media (max-width: 700px) {
+    .hero { padding: 48px 24px 36px; }
+    .container { padding: 32px 20px; }
+    .card-grid-3 { grid-template-columns: 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+    .hero-deco { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-deco">
+    COMPUTER ORGANIZATION<br>
+    &amp; DESIGN<br>
+    ─────────────────<br>
+    MIPS ASSEMBLY<br>
+    QUICK REFERENCE<br>
+    ─────────────────<br>
+    CH.2 INSTRUCTIONS
+  </div>
+  <div class="hero-tag">计算机组成与设计 · 第二章</div>
+  <h1>MIPS 汇编<br>速查手册</h1>
+  <p>涵盖寄存器、算术指令、内存访问、移位、大常数加载、字节序与跳转指令的核心考点、踩坑点与答题技巧。</p>
+</div>
+
+<div class="container">
+
+<!-- ═══════════════════════════════════════════
+     §1 寄存器
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <span class="section-title">寄存器速查</span>
+    <span class="section-badge badge-blue">基础</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>寄存器</th><th>名称</th><th>用途</th><th>考试映射惯例</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">$zero / $0</td><td>零寄存器</td><td>永远是 0，只读，硬件写死</td><td>—</td></tr>
+        <tr><td class="mono">$s0–$s7</td><td>保存寄存器</td><td>对应 C 程序变量</td><td class="tag-teal">f→$s0, g→$s1, h→$s2, i→$s3, j→$s4</td></tr>
+        <tr><td class="mono">$t0–$t9</td><td>临时寄存器</td><td>存中间计算结果</td><td class="tag-blue">做题最常用！</td></tr>
+        <tr><td class="mono">$s6, $s7</td><td>（习惯用法）</td><td>数组基地址</td><td class="tag-amber">A基址→$s6, B基址→$s7</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="trap">
+    <span class="trap-icon">⚠️</span>
+    <div><strong style="color:var(--coral)">$0 vs $s0 易混淆！</strong> $0 永远是常数 0；$s0 是变量寄存器。题目字体模糊时一定要放大确认，两者答案天壤之别。</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     §2 指令类型与格式
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <span class="section-title">三种指令格式</span>
+    <span class="section-badge badge-teal">重点</span>
+  </div>
+
+  <div class="card-grid">
+    <div class="card blue">
+      <div class="card-title">R 型 — 寄存器运算</div>
+      <div class="bit-row">
+        <div class="bit-cell bc-blue" style="flex:1.5"><span class="bit-label">op</span><span class="bit-val">6b</span></div>
+        <div class="bit-cell bc-purple"><span class="bit-label">rs</span><span class="bit-val">5b</span></div>
+        <div class="bit-cell bc-purple"><span class="bit-label">rt</span><span class="bit-val">5b</span></div>
+        <div class="bit-cell bc-teal"><span class="bit-label">rd</span><span class="bit-val">5b</span></div>
+        <div class="bit-cell"><span class="bit-label">shamt</span><span class="bit-val">5b</span></div>
+        <div class="bit-cell bc-blue" style="flex:1.5"><span class="bit-label">funct</span><span class="bit-val">6b</span></div>
+      </div>
+      <div style="font-size:0.82rem;color:var(--muted);margin-top:8px">指令：<span class="pill pill-blue">add</span><span class="pill pill-blue">sub</span><span class="pill pill-blue">sll</span><span class="pill pill-blue">srl</span><span class="pill pill-blue">jr</span></div>
+      <div class="code-block" style="margin-top:10px"><span class="kw">add</span> <span class="reg">$rd</span>, <span class="reg">$rs</span>, <span class="reg">$rt</span>  <span class="cmt"># rd=rs+rt，三个都是寄存器</span></div>
+    </div>
+
+    <div class="card teal">
+      <div class="card-title">I 型 — 含立即数</div>
+      <div class="bit-row">
+        <div class="bit-cell bc-blue" style="flex:1.5"><span class="bit-label">op</span><span class="bit-val">6b</span></div>
+        <div class="bit-cell bc-purple"><span class="bit-label">rs</span><span class="bit-val">5b</span></div>
+        <div class="bit-cell bc-teal"><span class="bit-label">rt</span><span class="bit-val">5b</span></div>
+        <div class="bit-cell bc-amber" style="flex:4"><span class="bit-label">immediate</span><span class="bit-val">16b</span></div>
+      </div>
+      <div style="font-size:0.82rem;color:var(--muted);margin-top:8px">指令：<span class="pill pill-teal">addi</span><span class="pill pill-teal">ori</span><span class="pill pill-teal">lw</span><span class="pill pill-teal">sw</span></div>
+      <div class="code-block" style="margin-top:10px"><span class="kw">addi</span> <span class="reg">$rt</span>, <span class="reg">$rs</span>, <span class="imm">imm</span>  <span class="cmt"># rt=rs+imm，常数范围±32767</span></div>
+    </div>
+
+    <div class="card amber">
+      <div class="card-title">J 型 — 跳转</div>
+      <div class="bit-row">
+        <div class="bit-cell bc-blue" style="flex:1.5"><span class="bit-label">op</span><span class="bit-val">6b</span></div>
+        <div class="bit-cell bc-amber" style="flex:6.5"><span class="bit-label">target（跳转目标）</span><span class="bit-val">26b</span></div>
+      </div>
+      <div style="font-size:0.82rem;color:var(--muted);margin-top:8px">指令：<span class="pill pill-amber">j</span><span class="pill pill-amber">jal</span></div>
+      <div class="code-block" style="margin-top:10px"><span class="kw">j</span> <span class="imm">target</span>  <span class="cmt"># 实际地址=PC高4位|target|00</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     §3 核心指令速查表
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <span class="section-title">核心指令速查</span>
+    <span class="section-badge badge-teal">重点</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>指令</th><th>格式</th><th>语义</th><th>注意事项</th></tr></thead>
+      <tbody>
+        <tr><td class="mono tag-blue">add</td><td class="mono">add $rd,$rs,$rt</td><td>rd = rs + rt</td><td>三个操作数必须全是寄存器</td></tr>
+        <tr><td class="mono tag-blue">sub</td><td class="mono">sub $rd,$rs,$rt</td><td>rd = rs - rt</td><td>无 subi！减常数用 addi 加负数</td></tr>
+        <tr><td class="mono tag-teal">addi</td><td class="mono">addi $rt,$rs,imm</td><td>rt = rs + imm</td><td>立即数16位，符号扩展，范围±32767</td></tr>
+        <tr><td class="mono tag-teal">ori</td><td class="mono">ori $rt,$rs,imm</td><td>rt = rs | imm</td><td>零扩展，加载大常数低16位用它</td></tr>
+        <tr><td class="mono tag-teal">lw</td><td class="mono">lw $rt,offset($rs)</td><td>rt = Memory[rs+offset]</td><td>offset必须是常数；执行后$rt装的是数据</td></tr>
+        <tr><td class="mono tag-teal">sw</td><td class="mono">sw $rt,offset($rs)</td><td>Memory[rs+offset] = rt</td><td>offset必须是常数</td></tr>
+        <tr><td class="mono tag-amber">lui</td><td class="mono">lui $rt,imm</td><td>rt高16位=imm，低16位=0</td><td>加载大常数第一步</td></tr>
+        <tr><td class="mono tag-purple">sll</td><td class="mono">sll $rd,$rt,shamt</td><td>rd = rt &lt;&lt; shamt</td><td>= ×2ⁿ；数组×4固定用sll 2</td></tr>
+        <tr><td class="mono tag-purple">srl</td><td class="mono">srl $rd,$rt,shamt</td><td>rd = rt &gt;&gt; shamt</td><td>= ÷2ⁿ（逻辑右移，高位补0）</td></tr>
+        <tr><td class="mono tag-coral">j</td><td class="mono">j target</td><td>PC = PC[31:28]|target|00</td><td>只能跳同一256MB区域</td></tr>
+        <tr><td class="mono tag-coral">jr</td><td class="mono">jr $rs</td><td>PC = $rs</td><td>可跳任意地址，无范围限制</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     §4 易错/踩坑合集
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <span class="section-title">高频踩坑点</span>
+    <span class="section-badge badge-coral">必看</span>
+  </div>
+
+  <div class="card-grid">
+    <div class="card coral">
+      <div class="card-title">⚠️ 陷阱 1：没有 subi</div>
+      <p style="font-size:0.88rem;color:var(--muted);margin-bottom:10px">MIPS 没有减立即数指令，减常数只能用加负数。</p>
+      <div class="code-block">
+<span class="err"><span class="kw">sub</span> <span class="reg">$t0</span>, <span class="reg">$s2</span>, <span class="imm">5</span>   <span class="cmt"># ❌ 不存在！</span></span>
+<span class="ok"><span class="kw">addi</span> <span class="reg">$t0</span>, <span class="reg">$s2</span>, <span class="imm">-5</span>  <span class="cmt"># ✅ h-5 = h+(-5)</span></span>
+      </div>
+    </div>
+
+    <div class="card coral">
+      <div class="card-title">⚠️ 陷阱 2：add 不能用常数</div>
+      <p style="font-size:0.88rem;color:var(--muted);margin-bottom:10px">add/sub 是 R 型指令，两个源操作数必须是寄存器。</p>
+      <div class="code-block">
+<span class="err"><span class="kw">add</span> <span class="reg">$t0</span>, <span class="reg">$s0</span>, <span class="imm">5</span>   <span class="cmt"># ❌ 5不是寄存器</span></span>
+<span class="ok"><span class="kw">addi</span> <span class="reg">$t0</span>, <span class="reg">$s0</span>, <span class="imm">5</span>  <span class="cmt"># ✅ 用addi</span></span>
+      </div>
+    </div>
+
+    <div class="card coral">
+      <div class="card-title">⚠️ 陷阱 3：数组下标要×4</div>
+      <p style="font-size:0.88rem;color:var(--muted);margin-bottom:10px">int 占4字节，变量下标必须先转换为字节偏移。</p>
+      <div class="code-block">
+<span class="cmt"># A[i] 的地址</span>
+<span class="kw">sll</span>  <span class="reg">$t0</span>, <span class="reg">$s3</span>, <span class="imm">2</span>   <span class="cmt"># t0 = i×4</span>
+<span class="kw">add</span>  <span class="reg">$t0</span>, <span class="reg">$s6</span>, <span class="reg">$t0</span> <span class="cmt"># t0 = &amp;A[i]</span>
+      </div>
+    </div>
+
+    <div class="card coral">
+      <div class="card-title">⚠️ 陷阱 4：lw 后寄存器身份变了</div>
+      <p style="font-size:0.88rem;color:var(--muted);margin-bottom:10px">lw 执行后，目标寄存器装的是数据，不再是地址。</p>
+      <div class="code-block">
+<span class="kw">add</span>  <span class="reg">$t0</span>, <span class="reg">$s6</span>, <span class="reg">$t1</span> <span class="cmt"># $t0 = 地址</span>
+<span class="hl"><span class="kw">lw</span>   <span class="reg">$t0</span>, <span class="imm">0</span>(<span class="reg">$t0</span>)    <span class="cmt"># $t0 = 数据（身份转换！）</span></span>
+      </div>
+    </div>
+
+    <div class="card coral">
+      <div class="card-title">⚠️ 陷阱 5：逆向读汇编追踪寄存器</div>
+      <p style="font-size:0.88rem;color:var(--muted);margin-bottom:10px">$s0 可能中途被覆盖，后面再用时已是新值，不是原始变量 f！</p>
+      <div class="code-block">
+<span class="kw">lw</span> <span class="reg">$s0</span>, <span class="imm">0</span>(<span class="reg">$t0</span>)  <span class="cmt"># $s0 从此变成 A[f]</span>
+<span class="hl">              <span class="cmt"># 后面的 $s0 ≠ 原来的 f！</span></span>
+      </div>
+    </div>
+
+    <div class="card coral">
+      <div class="card-title">⚠️ 陷阱 6：addi vs ori 扩展方式不同</div>
+      <p style="font-size:0.88rem;color:var(--muted);margin-bottom:10px">加载大常数低16位时必须用 ori，否则低16位最高位为1时会破坏高位。</p>
+      <div class="code-block">
+<span class="cmt"># 低16位最高位=1（如0x9xxx）时：</span>
+<span class="err"><span class="kw">addi</span> <span class="cmt"># 符号扩展 → 高16位变0xFFFF 💥</span></span>
+<span class="ok"><span class="kw">ori</span>  <span class="cmt"># 零扩展  → 高16位不变 ✅</span></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     §5 数组访问完整流程
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <span class="section-title">数组访问完整流程</span>
+    <span class="section-badge badge-teal">重点</span>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <p style="font-size:0.88rem;color:var(--muted);margin-bottom:12px">以 <code style="color:var(--teal)">B[8] = A[i-j]</code> 为例（A基址$s6，B基址$s7，i=$s3，j=$s4）</p>
+      <div class="code-block">
+<span class="cmt"># 步骤1：算变量下标</span>
+<span class="kw">sub</span>  <span class="reg">$t0</span>, <span class="reg">$s3</span>, <span class="reg">$s4</span>  <span class="cmt"># t0 = i-j</span>
+
+<span class="cmt"># 步骤2：转字节偏移（×4）</span>
+<span class="kw">sll</span>  <span class="reg">$t0</span>, <span class="reg">$t0</span>, <span class="imm">2</span>    <span class="cmt"># t0 = (i-j)×4</span>
+
+<span class="cmt"># 步骤3：算地址，读值</span>
+<span class="kw">add</span>  <span class="reg">$t1</span>, <span class="reg">$s6</span>, <span class="reg">$t0</span>  <span class="cmt"># t1 = &amp;A[i-j]</span>
+<span class="kw">lw</span>   <span class="reg">$t2</span>, <span class="imm">0</span>(<span class="reg">$t1</span>)    <span class="cmt"># t2 = A[i-j]</span>
+
+<span class="cmt"># 步骤4：常数下标直接×4写offset</span>
+<span class="kw">sw</span>   <span class="reg">$t2</span>, <span class="imm">32</span>(<span class="reg">$s7</span>)   <span class="cmt"># B[8]=A[i-j]，32=8×4</span>
+      </div>
+    </div>
+    <div>
+      <div class="tip" style="margin-bottom:14px">
+        <span class="tip-icon">💡</span>
+        <div><strong style="color:var(--teal)">优化技巧：addi+lw 可合并</strong><br>
+        看到 <code>addi $t2, $t0, 4</code> 紧跟 <code>lw $x, 0($t2)</code>，直接合并为 <code>lw $x, 4($t0)</code>，省一条指令。</div>
+      </div>
+      <div class="tip">
+        <span class="tip-icon">💡</span>
+        <div><strong style="color:var(--teal)">常数下标不需要 sll</strong><br>
+        B[8] 的偏移 = 8×4 = 32，编译期已知，直接写进 sw 的 offset 字段，不需要计算。</div>
+      </div>
+      <div class="card amber" style="margin-top:14px">
+        <div class="card-title">先 sll 再 addi 更优</div>
+        <div class="code-block">
+<span class="cmt"># 访问 B[i+1] 和 B[i+2]</span>
+<span class="kw">sll</span>  <span class="reg">$t0</span>, <span class="reg">$s0</span>, <span class="imm">2</span>  <span class="cmt"># t0=i×4</span>
+<span class="kw">addi</span> <span class="reg">$t1</span>, <span class="reg">$t0</span>, <span class="imm">4</span>  <span class="cmt"># (i+1)×4=i×4+4</span>
+<span class="kw">addi</span> <span class="reg">$t2</span>, <span class="reg">$t0</span>, <span class="imm">8</span>  <span class="cmt"># (i+2)×4=i×4+8</span>
+<span class="cmt"># 比先addi再sll少1条！</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     §6 大常数加载
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <span class="section-title">32位大常数加载</span>
+    <span class="section-badge badge-amber">重点</span>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <p style="font-size:0.88rem;color:var(--muted);margin-bottom:12px">以 <code style="color:var(--amber)">0x20014924</code> 为例</p>
+      <div class="code-block">
+<span class="cmt"># 固定套路：lui + ori</span>
+<span class="kw">lui</span>  <span class="reg">$t1</span>, <span class="imm">0x2001</span>
+<span class="cmt"># $t1 = 0x20010000（低16位补0）</span>
+
+<span class="kw">ori</span>  <span class="reg">$t1</span>, <span class="reg">$t1</span>, <span class="imm">0x4924</span>
+<span class="cmt"># $t1 = 0x20014924 ✅</span>
+      </div>
+      <div class="tip" style="margin-top:12px">
+        <span class="tip-icon">💡</span>
+        <div>两个 $t1 完全合法，意思是"$t1 = $t1 | 立即数"，源和目标同一个寄存器在 MIPS 里很常见。</div>
+      </div>
+    </div>
+    <div>
+      <div class="card amber">
+        <div class="card-title">addi vs ori 扩展对比</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>低16位最高位</th><th>ori结果</th><th>addi结果</th></tr></thead>
+            <tbody>
+              <tr><td>= 0（如0x4924）</td><td class="tag-green">0x00004924 ✅</td><td class="tag-green">0x00004924 ✅</td></tr>
+              <tr><td>= 1（如0x8924）</td><td class="tag-green">0x00008924 ✅</td><td class="tag-coral">0xFFFF8924 💥</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:0.82rem;color:var(--muted);margin-top:10px">结论：<strong style="color:var(--amber)">永远用 ori</strong>，不管最高位是 0 还是 1，一律安全。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     §7 大小端字节序
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <span class="section-title">大端 vs 小端字节序</span>
+    <span class="section-badge badge-teal">考点</span>
+  </div>
+
+  <p style="font-size:0.88rem;color:var(--muted);margin-bottom:16px">以 <code style="color:var(--teal)">0xabcdef12</code> 从地址 0 开始存储为例</p>
+
+  <div class="endian-wrap">
+    <div class="endian-col">
+      <div class="endian-title" style="color:var(--blue)">大端 Big-Endian — 高字节在低地址</div>
+      <div class="endian-row">
+        <span class="endian-addr">地址 0</span>
+        <span class="endian-byte" style="background:var(--coral)15;border-color:var(--coral)55;color:var(--coral)">0xab <span style="font-size:0.65rem;opacity:0.7">最高字节</span></span>
+      </div>
+      <div class="endian-row">
+        <span class="endian-addr">地址 1</span>
+        <span class="endian-byte" style="background:var(--purple)15;border-color:var(--purple)55;color:var(--purple)">0xcd</span>
+      </div>
+      <div class="endian-row">
+        <span class="endian-addr">地址 2</span>
+        <span class="endian-byte" style="background:var(--blue)15;border-color:var(--blue)55;color:var(--blue)">0xef</span>
+      </div>
+      <div class="endian-row">
+        <span class="endian-addr">地址 3</span>
+        <span class="endian-byte" style="background:var(--teal)15;border-color:var(--teal)55;color:var(--teal)">0x12 <span style="font-size:0.65rem;opacity:0.7">最低字节</span></span>
+      </div>
+      <div class="tip" style="margin-top:12px">
+        <span class="tip-icon">✅</span>
+        <div>顺序与我们书写数字完全一致，直觉友好。<br>MIPS 教材默认使用大端；TCP/IP 网络协议也是大端。</div>
+      </div>
+    </div>
+
+    <div class="endian-col">
+      <div class="endian-title" style="color:var(--amber)">小端 Little-Endian — 低字节在低地址</div>
+      <div class="endian-row">
+        <span class="endian-addr">地址 0</span>
+        <span class="endian-byte" style="background:var(--teal)15;border-color:var(--teal)55;color:var(--teal)">0x12 <span style="font-size:0.65rem;opacity:0.7">最低字节</span></span>
+      </div>
+      <div class="endian-row">
+        <span class="endian-addr">地址 1</span>
+        <span class="endian-byte" style="background:var(--blue)15;border-color:var(--blue)55;color:var(--blue)">0xef</span>
+      </div>
+      <div class="endian-row">
+        <span class="endian-addr">地址 2</span>
+        <span class="endian-byte" style="background:var(--purple)15;border-color:var(--purple)55;color:var(--purple)">0xcd</span>
+      </div>
+      <div class="endian-row">
+        <span class="endian-addr">地址 3</span>
+        <span class="endian-byte" style="background:var(--coral)15;border-color:var(--coral)55;color:var(--coral)">0xab <span style="font-size:0.65rem;opacity:0.7">最高字节</span></span>
+      </div>
+      <div class="trap" style="margin-top:12px">
+        <span class="trap-icon">🔄</span>
+        <div>顺序与书写完全相反，像把字节"倒过来"存。<br>x86/x64（你的电脑）是小端。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="answer">
+    <span class="answer-icon">🗝️</span>
+    <div><strong style="color:var(--green)">考试答题口诀：</strong> 大端 = 大头（高字节）在前（低地址）；小端 = 小头（低字节）在前（低地址）。小端就是把字节顺序整体翻转后写。</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     §8 j 指令跳转范围
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <span class="section-title">j 指令跳转范围判断</span>
+    <span class="section-badge badge-amber">考点</span>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <p style="font-size:0.88rem;color:var(--muted);margin-bottom:12px"><strong style="color:var(--text)">实际跳转地址拼接方式：</strong></p>
+      <div class="bit-row">
+        <div class="bit-cell bc-purple" style="flex:1"><span class="bit-label">PC[31:28]</span><span class="bit-val">4位</span></div>
+        <div class="bit-cell bc-amber" style="flex:6.5"><span class="bit-label">指令中的26位target</span><span class="bit-val">26位</span></div>
+        <div class="bit-cell bc-teal" style="flex:0.5"><span class="bit-label">补</span><span class="bit-val">00</span></div>
+      </div>
+      <div style="margin:14px 0 8px;font-size:0.85rem">
+        <span class="pill pill-purple">高4位来自PC</span>
+        <span class="pill pill-amber">中间26位来自指令</span>
+        <span class="pill pill-teal">末两位固定00</span>
+      </div>
+      <p style="font-size:0.82rem;color:var(--muted)">末两位固定00的原因：MIPS 指令4字节对齐，所有合法地址末两位必然是00，存储时省略这2位。</p>
+    </div>
+
+    <div>
+      <div class="card amber">
+        <div class="card-title">快速判断法（考试直接用）</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>PC 十六进制第1位</th><th>目标地址第1位</th><th>结论</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">0</td><td class="mono">0</td><td class="tag-green">✅ j 可以跳</td></tr>
+              <tr><td class="mono">0</td><td class="mono">2</td><td class="tag-coral">❌ 不能，需要 jr</td></tr>
+              <tr><td class="mono">2</td><td class="mono">2</td><td class="tag-green">✅ j 可以跳</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:0.82rem;color:var(--muted);margin-top:10px">十六进制第一个字符就是高4位，相同才能用 j，不同就用 jr。</p>
+      </div>
+      <div class="tip" style="margin-top:12px">
+        <span class="tip-icon">💡</span>
+        <div><strong style="color:var(--teal)">跨区域跳转用 jr：</strong>
+        <div class="code-block" style="margin-top:8px"><span class="kw">lui</span>  <span class="reg">$t0</span>, <span class="imm">0x2001</span>
+<span class="kw">ori</span>  <span class="reg">$t0</span>, <span class="reg">$t0</span>, <span class="imm">0x4924</span>
+<span class="kw">jr</span>   <span class="reg">$t0</span>  <span class="cmt"># 跳到任意地址</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="trap" style="margin-top:16px">
+    <span class="trap-icon">⚠️</span>
+    <div><strong style="color:var(--coral)">写 j 指令时直接写完整32位地址</strong>，汇编器自动提取中间26位。高4位必须和执行时PC高4位一致，否则汇编器报错——它会检查但不会帮你修正。</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     §9 翻译题答题步骤
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <span class="section-title">两类题型的答题套路</span>
+    <span class="section-badge badge-blue">方法论</span>
+  </div>
+
+  <div class="two-col">
+    <div class="card blue">
+      <div class="card-title">C → MIPS（正向翻译）</div>
+      <div style="font-size:0.88rem;line-height:2">
+        <div style="display:flex;gap:10px;align-items:baseline;margin-bottom:6px"><span style="color:var(--blue);font-family:'JetBrains Mono',monospace;font-size:0.75rem;flex-shrink:0">STEP 1</span><span>确认变量→寄存器映射（f=$s0等）</span></div>
+        <div style="display:flex;gap:10px;align-items:baseline;margin-bottom:6px"><span style="color:var(--blue);font-family:'JetBrains Mono',monospace;font-size:0.75rem;flex-shrink:0">STEP 2</span><span>按优先级拆分子操作</span></div>
+        <div style="display:flex;gap:10px;align-items:baseline;margin-bottom:6px"><span style="color:var(--blue);font-family:'JetBrains Mono',monospace;font-size:0.75rem;flex-shrink:0">STEP 3</span><span>一个子操作→一条指令</span></div>
+        <div style="display:flex;gap:10px;align-items:baseline;margin-bottom:6px"><span style="color:var(--blue);font-family:'JetBrains Mono',monospace;font-size:0.75rem;flex-shrink:0">STEP 4</span><span>数组下标×4，常数下标直接写offset</span></div>
+        <div style="display:flex;gap:10px;align-items:baseline"><span style="color:var(--blue);font-family:'JetBrains Mono',monospace;font-size:0.75rem;flex-shrink:0">STEP 5</span><span>检查能否合并（addi+lw → lw offset）</span></div>
+      </div>
+    </div>
+
+    <div class="card teal">
+      <div class="card-title">MIPS → C（逆向翻译）</div>
+      <div style="font-size:0.88rem;line-height:2">
+        <div style="display:flex;gap:10px;align-items:baseline;margin-bottom:6px"><span style="color:var(--teal);font-family:'JetBrains Mono',monospace;font-size:0.75rem;flex-shrink:0">STEP 1</span><span>建寄存器追踪表，逐行更新每个寄存器的值</span></div>
+        <div style="display:flex;gap:10px;align-items:baseline;margin-bottom:6px"><span style="color:var(--teal);font-family:'JetBrains Mono',monospace;font-size:0.75rem;flex-shrink:0">STEP 2</span><span>标注每个寄存器当前是"地址"还是"数据"</span></div>
+        <div style="display:flex;gap:10px;align-items:baseline;margin-bottom:6px"><span style="color:var(--teal);font-family:'JetBrains Mono',monospace;font-size:0.75rem;flex-shrink:0">STEP 3</span><span>特别注意变量寄存器（$s0等）是否被 lw 覆盖</span></div>
+        <div style="display:flex;gap:10px;align-items:baseline;margin-bottom:6px"><span style="color:var(--teal);font-family:'JetBrains Mono',monospace;font-size:0.75rem;flex-shrink:0">STEP 4</span><span>sw 的目标地址反推数组名和下标</span></div>
+        <div style="display:flex;gap:10px;align-items:baseline"><span style="color:var(--teal);font-family:'JetBrains Mono',monospace;font-size:0.75rem;flex-shrink:0">STEP 5</span><span>整理成完整 C 语句</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     §10 知识点速记卡
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">10</span>
+    <span class="section-title">一句话知识速记</span>
+    <span class="section-badge badge-blue">速查</span>
+  </div>
+  <div class="card-grid">
+    <div class="card green"><div class="card-title">0x 前缀</div><p style="font-size:0.88rem">只是"我是十六进制"的身份证，本身无数值含义。1位十六进制=4位二进制，可读性远超二进制。</p></div>
+    <div class="card purple"><div class="card-title">sll n = ×2ⁿ</div><p style="font-size:0.88rem">左移1位×2，左移2位×4。数组寻址×4固定用 sll 2，比 mul 快得多（单周期 vs 多周期）。</p></div>
+    <div class="card blue"><div class="card-title">4字节对齐</div><p style="font-size:0.88rem">合法指令地址末两位永远是00，即十六进制末位必须是 0/4/8/C。</p></div>
+    <div class="card teal"><div class="card-title">j 的256MB限制</div><p style="font-size:0.88rem">j 只能在当前PC所在的256MB区域内跳。跨区域必须用 jr + lui+ori 先加载目标地址。</p></div>
+    <div class="card amber"><div class="card-title">lui+ori 固定套路</div><p style="font-size:0.88rem">32位大常数永远用 lui 装高16位 + ori 填低16位，两条搞定，永远用 ori 不用 addi。</p></div>
+    <div class="card coral"><div class="card-title">add/sub 只吃寄存器</div><p style="font-size:0.88rem">两个源操作数必须全是寄存器。有常数就用 addi；减常数就是 addi 加负数；MIPS 无 subi。</p></div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<div class="footer">
+  <span>MIPS ASSEMBLY QUICK REFERENCE · CH.2</span>
+  <span>计算机组成与设计 · 2026</span>
+</div>
+
+</body>
+</html>

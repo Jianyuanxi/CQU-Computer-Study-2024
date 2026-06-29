@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据库复习 — 函数 / 过程 / 触发器</title>
+<style>
+:root {
+  --bg: #f8f7f4;
+  --card: #ffffff;
+  --border: #e5e3dc;
+  --text: #1a1a18;
+  --muted: #6b6b68;
+  --blue-bg: #e6f1fb; --blue-text: #0c447c; --blue-bd: #b5d4f4;
+  --green-bg: #eaf3de; --green-text: #27500a; --green-bd: #c0dd97;
+  --amber-bg: #faeeda; --amber-text: #633806; --amber-bd: #fac775;
+  --red-bg: #fcebeb; --red-text: #791f1f; --red-bd: #f7c1c1;
+  --purple-bg: #eeedfe; --purple-text: #3c3489; --purple-bd: #afa9ec;
+  --mono: 'Consolas', 'Monaco', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 15px; line-height: 1.6; }
+.page { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+h1 { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+.subtitle { color: var(--muted); font-size: 13px; margin-bottom: 2rem; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+.tab { padding: 8px 18px; font-size: 14px; font-weight: 500; cursor: pointer; border-radius: 8px 8px 0 0; border: 1px solid transparent; color: var(--muted); background: transparent; transition: all .15s; }
+.tab.active { background: var(--card); border-color: var(--border); border-bottom-color: var(--card); color: var(--text); margin-bottom: -1px; }
+.tab:hover:not(.active) { background: #f0eeea; color: var(--text); }
+.panel { display: none; } .panel.active { display: block; }
+.section { margin-bottom: 1.5rem; }
+.sec-label { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
+.card-title { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+code, .code-inline { font-family: var(--mono); font-size: 13px; background: #f0eeea; padding: 1px 5px; border-radius: 4px; }
+.code-block { background: #1e1e1e; color: #d4d4d4; font-family: var(--mono); font-size: 13px; padding: 14px 16px; border-radius: 10px; line-height: 1.75; white-space: pre; overflow-x: auto; margin: 10px 0; }
+.kw { color: #569cd6; } .str { color: #ce9178; } .cm { color: #6a9955; } .hl { color: #dcdcaa; } .num { color: #b5cea8; }
+.badge { display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 6px; font-weight: 500; margin: 2px 3px 2px 0; }
+.b-blue { background: var(--blue-bg); color: var(--blue-text); }
+.b-green { background: var(--green-bg); color: var(--green-text); }
+.b-amber { background: var(--amber-bg); color: var(--amber-text); }
+.b-red { background: var(--red-bg); color: var(--red-text); }
+.b-purple { background: var(--purple-bg); color: var(--purple-text); }
+.warn { background: var(--amber-bg); border-left: 3px solid #ef9f27; padding: 10px 14px; font-size: 13px; color: var(--amber-text); margin: 8px 0; border-radius: 0 6px 6px 0; }
+.err { background: var(--red-bg); border-left: 3px solid #e24b4a; padding: 10px 14px; font-size: 13px; color: var(--red-text); margin: 8px 0; border-radius: 0 6px 6px 0; }
+.ok { background: var(--green-bg); border-left: 3px solid #639922; padding: 10px 14px; font-size: 13px; color: var(--green-text); margin: 8px 0; border-radius: 0 6px 6px 0; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.mini-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-size: 13px; }
+.mini-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; font-weight: 500; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0; }
+th { background: #f0eeea; padding: 8px 12px; text-align: left; font-weight: 600; font-size: 12px; }
+td { padding: 8px 12px; border-top: 1px solid var(--border); }
+tr:hover td { background: #fafaf8; }
+.tag-yes { color: var(--green-text); font-weight: 600; }
+.tag-no { color: var(--muted); }
+p.tip { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 6px 0; }
+</style>
+</head>
+<body>
+<div class="page">
+<h1>数据库复习 — 函数 / 过程 / 触发器</h1>
+<p class="subtitle">重庆大学数据库系统 · 第7讲 高级SQL · 考前速查</p>
+
+<div class="tabs">
+  <button class="tab active" onclick="show('fn')">函数 Function</button>
+  <button class="tab" onclick="show('proc')">过程 Procedure</button>
+  <button class="tab" onclick="show('trig')">触发器 Trigger</button>
+  <button class="tab" onclick="show('cmp')">对比速查</button>
+</div>
+
+<!-- ===== 函数 TAB ===== -->
+<div class="panel active" id="tab-fn">
+
+<div class="section">
+<div class="sec-label">① 返回标量值的函数</div>
+<div class="card">
+<div class="card-title">语法模板</div>
+<div class="code-block"><span class="kw">create function</span> 函数名 (<span class="hl">参数名 类型</span>)
+<span class="kw">returns</span> <span class="hl">integer</span>          <span class="cm">-- 返回类型（integer / varchar(n) 等）</span>
+<span class="kw">begin</span>                      <span class="cm">-- 多条语句时必须有 begin-end</span>
+    <span class="kw">declare</span> 变量名 类型;
+    <span class="kw">select</span> 列名 <span class="kw">into</span> 变量名
+    <span class="kw">from</span> 表名 <span class="kw">where</span> 条件;
+    <span class="kw">return</span> 变量名;
+<span class="kw">end</span>;</div>
+<div class="warn">⚠️ 函数体只有 <strong>一条</strong> SQL 语句时，<strong>不需要</strong> begin-end；多条语句<strong>必须</strong>加。</div>
+</div>
+<div class="card">
+<div class="card-title">完整示例 — 返回教师人数</div>
+<div class="code-block"><span class="kw">create function</span> <span class="hl">instructor_count</span> (min_sal <span class="num">numeric</span>(<span class="num">8</span>,<span class="num">2</span>))
+<span class="kw">returns</span> <span class="num">integer</span>
+<span class="kw">begin</span>
+    <span class="kw">declare</span> cnt <span class="num">integer</span>;
+    <span class="kw">select</span> <span class="kw">count</span>(*) <span class="kw">into</span> cnt
+    <span class="kw">from</span> instructor
+    <span class="kw">where</span> salary &gt; min_sal;
+    <span class="kw">return</span> cnt;
+<span class="kw">end</span>;</div>
+<p class="tip">调用方式：直接在 SQL 中当函数用 → <code>select instructor_count(50000);</code></p>
+</div>
+</div>
+
+<div class="section">
+<div class="sec-label">② 返回表的函数</div>
+<div class="card">
+<div class="card-title">语法模板</div>
+<div class="code-block"><span class="kw">create function</span> 函数名 (参数名 类型)
+<span class="kw">returns table</span> (<span class="hl">列1 类型, 列2 类型, ...</span>)   <span class="cm">-- 声明返回表的每一列</span>
+<span class="kw">return table</span> (                              <span class="cm">-- 注意：return table，不是 returns</span>
+    <span class="kw">select</span> 列1, 列2, ...
+    <span class="kw">from</span> 表名
+    <span class="kw">where</span> 条件
+);</div>
+<div class="warn">⚠️ 声明用 <strong>returns table(...)</strong>，函数体用 <strong>return table(...)</strong>，两处拼写不同！</div>
+</div>
+<div class="card">
+<div class="card-title">完整示例 — 返回高薪教师列表</div>
+<div class="code-block"><span class="kw">create function</span> <span class="hl">instructors_above_avg</span> ()
+<span class="kw">returns table</span> (ID <span class="num">varchar</span>(<span class="num">5</span>), name <span class="num">varchar</span>(<span class="num">20</span>), salary <span class="num">numeric</span>(<span class="num">8</span>,<span class="num">2</span>))
+<span class="kw">return table</span> (
+    <span class="kw">select</span> ID, name, salary
+    <span class="kw">from</span> instructor
+    <span class="kw">where</span> salary &gt; (<span class="kw">select avg</span>(salary) <span class="kw">from</span> instructor)
+);</div>
+<div class="ok">调用方式：<code>select * from table(instructors_above_avg());</code></div>
+<div class="err">❌ 错误写法：<code>select * from instructors_above_avg();</code>（少了 table()包裹）</div>
+</div>
+</div>
+
+</div>
+
+<!-- ===== 过程 TAB ===== -->
+<div class="panel" id="tab-proc">
+
+<div class="section">
+<div class="sec-label">过程语法模板</div>
+<div class="card">
+<div class="code-block"><span class="kw">create procedure</span> 过程名 (
+    <span class="kw">in</span>  参数名 类型,      <span class="cm">-- 输入参数</span>
+    <span class="kw">out</span> 参数名 类型)      <span class="cm">-- 输出参数（不需要在 begin-end 里 declare）</span>
+<span class="kw">begin</span>
+    <span class="kw">select</span> 列名 <span class="kw">into</span> out参数名
+    <span class="kw">from</span> 表名
+    <span class="kw">where</span> 条件;
+<span class="kw">end</span>;</div>
+</div>
+</div>
+
+<div class="section">
+<div class="sec-label">完整示例</div>
+<div class="card">
+<div class="card-title">定义过程</div>
+<div class="code-block"><span class="kw">create procedure</span> <span class="hl">get_budget</span> (
+    <span class="kw">in</span>  dname       <span class="num">varchar</span>(<span class="num">20</span>),
+    <span class="kw">out</span> dept_budget <span class="num">numeric</span>(<span class="num">12</span>,<span class="num">2</span>))
+<span class="kw">begin</span>
+    <span class="kw">select</span> budget <span class="kw">into</span> dept_budget
+    <span class="kw">from</span> department
+    <span class="kw">where</span> dept_name = dname;
+<span class="kw">end</span>;</div>
+</div>
+<div class="card">
+<div class="card-title">调用过程（调用方需自己 declare）</div>
+<div class="code-block"><span class="kw">declare</span> dept_budget <span class="num">numeric</span>(<span class="num">12</span>,<span class="num">2</span>);   <span class="cm">-- 调用方声明变量接收 out 值</span>
+<span class="kw">call</span> get_budget(<span class="str">'Physics'</span>, dept_budget);</div>
+</div>
+</div>
+
+<div class="section">
+<div class="sec-label">过程易错点</div>
+<div class="grid2">
+<div class="card">
+<div class="err">❌ out 参数在 begin-end 里重复 declare<br><br>
+<code>create procedure p(out x integer)<br>begin<br>  declare x integer;  -- 错！<br>  ...</code></div>
+<div class="ok">✅ out 参数直接在 begin-end 里用，无需 declare</div>
+</div>
+<div class="card">
+<div class="err">❌ 调用方忘记 declare 接收变量<br><br>
+<code>call get_budget('CS', dept_budget); -- 报错，变量未声明</code></div>
+<div class="ok">✅ 必须先 declare，再 call<br><br>
+<code>declare dept_budget numeric(12,2);<br>call get_budget('CS', dept_budget);</code></div>
+</div>
+</div>
+</div>
+
+<div class="section">
+<div class="sec-label">函数 vs 过程 核心区别</div>
+<div class="card">
+<table>
+<tr><th></th><th>函数 function</th><th>过程 procedure</th></tr>
+<tr><td>返回值</td><td>有，用 return 返回</td><td>无 return，用 out 参数输出</td></tr>
+<tr><td>调用方式</td><td>SQL 语句中直接调用</td><td>call 语句调用</td></tr>
+<tr><td>参数方向</td><td>只有输入参数</td><td>in / out / inout</td></tr>
+<tr><td>返回表</td><td>可以（returns table）</td><td>不能直接返回表</td></tr>
+</table>
+</div>
+</div>
+
+</div>
+
+<!-- ===== 触发器 TAB ===== -->
+<div class="panel" id="tab-trig">
+
+<div class="section">
+<div class="sec-label">触发器语法模板</div>
+<div class="card">
+<div class="code-block"><span class="kw">create trigger</span> 触发器名
+    <span class="kw">after</span>/<span class="kw">before</span>  <span class="kw">insert</span>/<span class="kw">delete</span>/<span class="kw">update of</span> 表名 <span class="kw">on</span> (列名)  <span class="kw">on</span> 表名
+    <span class="kw">referencing new row as</span> nrow   <span class="cm">-- insert / update 可用</span>
+    <span class="kw">referencing old row as</span> orow   <span class="cm">-- delete / update 可用</span>
+    <span class="kw">for each row</span>                   <span class="cm">-- 行级触发（每行触发一次）</span>
+    <span class="kw">when</span> (触发条件)
+<span class="kw">begin atomic</span>
+    <span class="cm">-- 触发动作</span>
+<span class="kw">end</span>;</div>
+<div class="warn">⚠️ update 指定列的写法固定：<strong>update of 表名 on (列名)</strong>，of 在前 on 在后，不能颠倒！</div>
+</div>
+</div>
+
+<div class="section">
+<div class="sec-label">new row / old row 使用规则</div>
+<div class="card">
+<table>
+<tr><th>操作类型</th><th>new row（操作后）</th><th>old row（操作前）</th></tr>
+<tr><td>INSERT</td><td class="tag-yes">可用 ✓</td><td class="tag-no">不可用 ✗</td></tr>
+<tr><td>DELETE</td><td class="tag-no">不可用 ✗</td><td class="tag-yes">可用 ✓</td></tr>
+<tr><td>UPDATE</td><td class="tag-yes">可用 ✓</td><td class="tag-yes">可用 ✓</td></tr>
+</table>
+</div>
+</div>
+
+<div class="section">
+<div class="sec-label">课件三大案例</div>
+<div class="card">
+<div class="card-title">案例1：insert 触发 — 插入 section 时检查 time_slot_id 合法性</div>
+<div class="code-block"><span class="kw">create trigger</span> timeslot_check1
+    <span class="kw">after insert on</span> section
+    <span class="kw">referencing new row as</span> nrow
+    <span class="kw">for each row</span>
+    <span class="kw">when</span> (nrow.time_slot_id <span class="kw">not in</span> (
+        <span class="kw">select</span> time_slot_id <span class="kw">from</span> time_slot))
+<span class="kw">begin</span>
+    rollback;
+<span class="kw">end</span>;</div>
+</div>
+<div class="card">
+<div class="card-title">案例2：delete 触发 — 删除 time_slot 时检查 section 里是否还有引用</div>
+<div class="code-block"><span class="kw">create trigger</span> timeslot_check2
+    <span class="kw">after delete on</span> time_slot
+    <span class="kw">referencing old row as</span> orow
+    <span class="kw">for each row</span>
+    <span class="kw">when</span> (orow.time_slot_id <span class="kw">not in</span> (
+            <span class="kw">select</span> time_slot_id <span class="kw">from</span> time_slot)
+        <span class="kw">and</span> orow.time_slot_id <span class="kw">in</span> (
+            <span class="kw">select</span> time_slot_id <span class="kw">from</span> section))
+<span class="kw">begin</span>
+    rollback;
+<span class="kw">end</span>;</div>
+</div>
+<div class="card">
+<div class="card-title">案例3：update 触发 — 成绩从不及格变及格时更新学生总学分（同时用 nrow + orow）</div>
+<div class="code-block"><span class="kw">create trigger</span> credits_earned
+    <span class="kw">after update of</span> takes <span class="kw">on</span> (grade)
+    <span class="kw">referencing new row as</span> nrow
+    <span class="kw">referencing old row as</span> orow
+    <span class="kw">for each row</span>
+    <span class="kw">when</span> (nrow.grade &lt;&gt; <span class="str">'F'</span> <span class="kw">and</span> nrow.grade <span class="kw">is not null</span>
+        <span class="kw">and</span> (orow.grade = <span class="str">'F'</span> <span class="kw">or</span> orow.grade <span class="kw">is null</span>))
+<span class="kw">begin atomic</span>
+    <span class="kw">update</span> student
+    <span class="kw">set</span> tot_cred = tot_cred + (
+        <span class="kw">select</span> credits <span class="kw">from</span> course
+        <span class="kw">where</span> course.course_id = nrow.course_id)
+    <span class="kw">where</span> student.id = nrow.id;
+<span class="kw">end</span>;</div>
+<p class="tip"><code>&lt;&gt;</code> 等价于 <code>!=</code>，表示"不等于"，课件用 &lt;&gt; 写法。</p>
+</div>
+</div>
+
+<div class="section">
+<div class="sec-label">触发器易错点汇总</div>
+<div class="card">
+<div class="err">❌ update 触发指定列时，of / on 顺序写反<br>
+<code>after update on instructor of (salary)</code> — 错！</div>
+<div class="ok">✅ 正确：<code>after update of instructor on (salary)</code></div>
+<div class="err" style="margin-top:12px">❌ 改粒度时只改了 for each，忘了改 when 里的别名<br>
+把 for each statement 改成 for each row 后，when 里也要从 table别名.列 改成 row别名.列</div>
+<div class="err" style="margin-top:12px">❌ 触发动作里再去 from 表 查询当前行的数据<br>
+<code>insert into log select col from 原表 where ...</code> — 逻辑错误！</div>
+<div class="ok">✅ 当前行已在 nrow/orow 里，直接用 values 插入：<br>
+<code>insert into log values (nrow.col1, orow.col2 - nrow.col2);</code></div>
+<div class="err" style="margin-top:12px">❌ insert 触发器里声明了 old row — 不合法，insert 前没有旧行</div>
+<div class="warn" style="margin-top:12px">⚠️ begin atomic 与 begin：多条语句用 begin atomic（作为一个事务）；单条可省略 begin-end</div>
+</div>
+</div>
+
+</div>
+
+<!-- ===== 对比速查 TAB ===== -->
+<div class="panel" id="tab-cmp">
+
+<div class="section">
+<div class="sec-label">三者核心对比</div>
+<div class="card">
+<table>
+<tr><th></th><th>函数 function</th><th>过程 procedure</th><th>触发器 trigger</th></tr>
+<tr><td>如何触发</td><td>手动调用</td><td>call 调用</td><td>自动（绑定表事件）</td></tr>
+<tr><td>有无返回值</td><td>有（return）</td><td>无（out参数代替）</td><td>无</td></tr>
+<tr><td>能否返回表</td><td>可以</td><td>不能</td><td>—</td></tr>
+<tr><td>创建关键字</td><td>create function</td><td>create procedure</td><td>create trigger</td></tr>
+<tr><td>调用/触发方式</td><td>SQL中直接用 / table(fn())</td><td>call proc(params)</td><td>insert/update/delete</td></tr>
+<tr><td>begin-end</td><td>多条语句才需要</td><td>必须有</td><td>必须有</td></tr>
+</table>
+</div>
+</div>
+
+<div class="section">
+<div class="sec-label">通用易错点（所有三种）</div>
+<div class="grid2">
+<div class="card">
+<div class="card-title">变量 / 参数命名</div>
+<div class="err">❌ declare 的变量名和 return/into 里的不一致<br>如：declare building ... 但 return build</div>
+<div class="ok">✅ 命名要前后完全一致，大小写也要保持统一</div>
+</div>
+<div class="card">
+<div class="card-title">WHERE 里不能用聚集函数</div>
+<div class="err">❌ <code>where salary > avg(salary)</code></div>
+<div class="ok">✅ <code>where salary > (select avg(salary) from instructor)</code></div>
+</div>
+<div class="card">
+<div class="card-title">end 后面必须加分号</div>
+<div class="err">❌ <code>end</code>（没有分号）</div>
+<div class="ok">✅ <code>end;</code></div>
+</div>
+<div class="card">
+<div class="card-title">returns table vs return table</div>
+<div class="err">❌ 声明处写 return table（少 s）</div>
+<div class="ok">✅ 声明处：<code>returns table(...)</code><br>函数体：<code>return table(...)</code></div>
+</div>
+</div>
+</div>
+
+<div class="section">
+<div class="sec-label">语法一句话记忆卡</div>
+<div class="grid3">
+<div class="mini-card">
+<div class="mini-label">标量函数</div>
+create function → returns 类型 → begin → declare → select into → return → end;
+</div>
+<div class="mini-card">
+<div class="mini-label">返回表函数</div>
+create function → returns table(列声明) → return table(select 查询);
+</div>
+<div class="mini-card">
+<div class="mini-label">过程</div>
+create procedure → (in x, out y) → begin → select into y → end;<br>调用方：declare y; call p(v, y);
+</div>
+<div class="mini-card">
+<div class="mini-label">触发器 insert</div>
+after insert on 表 → referencing new row as nrow → for each row → when(...) → begin → 动作 → end;
+</div>
+<div class="mini-card">
+<div class="mini-label">触发器 delete</div>
+after delete on 表 → referencing old row as orow → for each row → when(...) → begin → 动作 → end;
+</div>
+<div class="mini-card">
+<div class="mini-label">触发器 update</div>
+after update of 表 on (列) → referencing new row / old row → for each row → when(...) → begin atomic → 动作 → end;
+</div>
+</div>
+</div>
+
+</div>
+
+</div><!-- end page -->
+
+<script>
+function show(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

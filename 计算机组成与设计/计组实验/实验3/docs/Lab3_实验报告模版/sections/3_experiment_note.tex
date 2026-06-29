@@ -1,0 +1,18 @@
+\section{实验过程记录}
+
+\subsection{模块实现过程}
+本次实验在实验一（ALU）和实验二（PC、Controller）的基础上，新增实现了以下模块：adder（32位加法器）、mux2（参数化2选1多路选择器）、signext（16位符号扩展）、sl2（左移2位）、regfile（32×32位寄存器堆，含\$s0直接输出端口display\_data）以及核心的datapath（数据通路）。Controller的memwrite信号保持1位输出，顶层文件直接将1位memwrite连接至数据存储器wea端口。
+
+\subsection{遇到的问题及解决方案}
+
+\subsubsection{Block Memory Generator 端口配置问题}
+在配置instr\_ram（Single Port ROM）时，ROM不含写端口，例化时需删除wea和dina连接，只保留clka、ena、addra、douta四个端口。data\_ram（Single Port RAM）未启用字节写使能（Use Byte Write Enable = false），wea为1位，直接与controller输出的1位memwrite相连，无需位宽转换。
+
+\subsubsection{仿真顶层模块设置错误}
+首次运行仿真时，仿真顶层未设置为testbench，导致波形全部为高阻态Z。通过在Sources面板右键testbench模块选择"Set as Top"后，仿真正常运行。
+
+\subsubsection{testbench时钟与Block RAM时序问题}
+testbench使用Block Memory Generator IP，存在一个时钟周期的输出延迟。将指令存储器和数据存储器的时钟连接为\texttt{!clk}（反相时钟），使RAM在clk下降沿采样地址，在clk上升沿时输出数据已稳定，从而满足单周期CPU的时序要求。
+
+\subsection{仿真验证}
+使用课程提供的testbench.v对CPU进行功能验证，程序（mipstest.asm）包含addi、or、and、add、beq、slt、sub、sw、lw、j十种指令，最终执行\texttt{sw \$2, 84(\$0)}时寄存器\$2=7，testbench检测到dataadr=84且writedata=7，控制台打印``Simulation succeeded''，验证了全部十条指令的数据通路与控制逻辑正确。

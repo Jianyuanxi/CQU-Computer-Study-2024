@@ -1,0 +1,120 @@
+<div class="step-wrap">
+<h2 class="sr-only">浮点除法实例：26.0除以5.0按七个步骤逐步计算的交互讲解</h2>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+<div style="font-size:14px;color:var(--color-text-secondary);">例题：X = 26.0 ÷ Y = 5.0</div>
+<div id="dots" style="display:flex;gap:6px;"></div>
+</div>
+
+<div class="panel" data-step="1">
+<div class="th-row">第1步 · 特殊值检测</div>
+<p class="body">X = 26.0，Y = 5.0，两者均不是 0、不是 ±∞、也不是 NaN。正常进入除法流程，不需要特殊处理。</p>
+</div>
+
+<div class="panel" data-step="2">
+<div class="th-row">第2步 · 拆分操作数</div>
+<table class="kv">
+<tr><td>X</td><td>26 = 11010(2) = 1.1010 × 2^4</td></tr>
+<tr><td></td><td>符号 Sx=0，阶码 Ex=4，尾数(含隐含1)=1.1010</td></tr>
+<tr><td>Y</td><td>5 = 101(2) = 1.01 × 2^2</td></tr>
+<tr><td></td><td>符号 Sy=0，阶码 Ey=2，尾数(含隐含1)=1.01</td></tr>
+</table>
+<p class="note">⚠️ 易错点：拆分时一定要把尾数写成 1.xxxx 的规格化形式，前面的隐含1平时不存储，但参与运算时必须补上。</p>
+</div>
+
+<div class="panel" data-step="3">
+<div class="th-row">第3步 · 确定结果符号</div>
+<div class="formula">Sresult = Sx ⊕ Sy = 0 ⊕ 0 = 0 → 结果为正数</div>
+</div>
+
+<div class="panel" data-step="4">
+<div class="th-row">第4步 · 阶码相减</div>
+<div class="formula">E = Ex − Ey = 4 − 2 = 2</div>
+<p class="note">⚠️ 易错点：这里减的是真实阶码（已去掉偏移量bias的值）。如果题目给的是机器码里存储的阶码（加了bias），要先减bias还原成真实阶码，相减后再加回一次bias重新编码，不能直接拿存储阶码相减。</p>
+</div>
+
+<div class="panel" data-step="5">
+<div class="th-row">第5步 · 尾数相除（二进制长除法）</div>
+<p class="body">用"试减+左移"的方式，把 1.1010 ÷ 1.01 像十进制长除法一样逐位算出商：</p>
+<table class="div-table">
+<tr><th>当前余数(十进制)</th><th>与除数1.25比较</th><th>商位</th><th>新余数</th></tr>
+<tr><td>1.625</td><td>≥1.25</td><td>1</td><td>1.625−1.25=0.375</td></tr>
+<tr><td>0.375×2=0.75</td><td>&lt;1.25</td><td>0</td><td>0.75</td></tr>
+<tr><td>0.75×2=1.5</td><td>≥1.25</td><td>1</td><td>1.5−1.25=0.25</td></tr>
+<tr><td>0.25×2=0.5</td><td>&lt;1.25</td><td>0</td><td>0.5</td></tr>
+<tr><td>0.5×2=1.0</td><td>&lt;1.25</td><td>0</td><td>1.0</td></tr>
+<tr><td>1.0×2=2.0</td><td>≥1.25</td><td>1</td><td>2.0−1.25=0.75（循环）</td></tr>
+</table>
+<div class="formula">商 = 1.010011001100..._(2)（无限循环二进制小数，十进制正好是1.3）</div>
+</div>
+
+<div class="panel" data-step="6">
+<div class="th-row">第6步 · 结果规格化</div>
+<p class="body">尾数相除的商一定落在 (0.5, 2) 区间内。</p>
+<table class="kv">
+<tr><td>商 ≥ 2</td><td>右移一位，阶码 +1</td></tr>
+<tr><td>商 &lt; 1</td><td>左移一位，阶码 −1</td></tr>
+<tr><td>1 ≤ 商 &lt; 2</td><td>已规格化，无需调整</td></tr>
+</table>
+<div class="formula">本例商=1.30 已经在[1,2)范围内 → 阶码保持 E=2，不需要移位</div>
+</div>
+
+<div class="panel" data-step="7">
+<div class="th-row">第7步 · 舍入与组装结果</div>
+<p class="body">真实硬件尾数位数有限（单精度23位），这里用4位尾数做示例，方便看清舍入的影响：</p>
+<table class="kv">
+<tr><td>无限尾数</td><td>1.0100|110011..._(2)</td></tr>
+<tr><td>保留4位</td><td>1.0100，看第5位=1 → 向上舍入</td></tr>
+<tr><td>舍入后</td><td>1.0101 × 2^2</td></tr>
+</table>
+<div class="formula">最终结果 ≈ +1.0101 × 2^2 = 101.01(2) = 5.25</div>
+<p class="note">⚠️ 真实值是5.2，4位尾数舍入后变成5.25，存在舍入误差——这正是为什么单精度要留23位尾数，位数越多误差越小。考试中只需写出规格化后的尾数、阶码和符号位拼成的最终编码即可。</p>
+</div>
+
+<div style="display:flex;gap:8px;margin-top:1rem;">
+<button id="prevBtn" onclick="stepNav(-1)">上一步</button>
+<button id="nextBtn" onclick="stepNav(1)">下一步</button>
+</div>
+</div>
+
+<style>
+.step-wrap{font-size:14px;}
+.th-row{font-size:16px;font-weight:500;margin-bottom:10px;}
+.body{margin:0 0 10px;line-height:1.7;}
+.note{margin:10px 0 0;font-size:13px;color:var(--color-text-secondary);background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;}
+.formula{font-family:var(--font-mono);font-size:14px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;margin:8px 0;}
+.kv{width:100%;border-collapse:collapse;margin:6px 0;}
+.kv td{padding:6px 8px;border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px;}
+.kv td:first-child{color:var(--color-text-secondary);width:90px;}
+.div-table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px;}
+.div-table th{text-align:left;padding:6px 8px;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-secondary);font-weight:500;}
+.div-table td{padding:6px 8px;border-bottom:0.5px solid var(--color-border-tertiary);}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--color-border-secondary);}
+.dot.active{background:var(--color-text-info);}
+</style>
+
+<script>
+var cur=1, total=7;
+var panels=document.querySelectorAll('.panel');
+var dotsEl=document.getElementById('dots');
+for(var i=1;i<=total;i++){
+  var d=document.createElement('div');
+  d.className='dot'+(i===1?' active':'');
+  d.dataset.i=i;
+  dotsEl.appendChild(d);
+}
+function render(){
+  panels.forEach(function(p){
+    p.style.display = (parseInt(p.dataset.step)===cur) ? 'block' : 'none';
+  });
+  Array.from(dotsEl.children).forEach(function(d){
+    d.classList.toggle('active', parseInt(d.dataset.i)===cur);
+  });
+  document.getElementById('prevBtn').disabled = (cur===1);
+  document.getElementById('nextBtn').disabled = (cur===total);
+}
+function stepNav(delta){
+  cur=Math.min(total,Math.max(1,cur+delta));
+  render();
+}
+render();
+</script>

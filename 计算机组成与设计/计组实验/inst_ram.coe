@@ -1,0 +1,52 @@
+; =============================================================
+; inst_ram.coe -- Instruction ROM initialization for testbench.v
+; Program: mipstest.asm (Patterson & Hennessy style CPU validation)
+;
+; Final state: sw $2, 84($0) where $2 = 7
+; testbench.v checks: dataadr===84 && writedata===7 => "Simulation succeeded"
+;
+; Word | Byte | Machine Code | Assembly
+; -----+------+--------------+------------------------------------------
+;   0  | 0x00 | 20020005     | addi $2,$0,5
+;   1  | 0x04 | 2003000c     | addi $3,$0,12
+;   2  | 0x08 | 2067fff7     | addi $7,$3,-9       ($7=3)
+;   3  | 0x0c | 00e22025     | or   $4,$7,$2       ($4=7)
+;   4  | 0x10 | 00642824     | and  $5,$3,$4       ($5=4)
+;   5  | 0x14 | 00a42820     | add  $5,$5,$4       ($5=11)
+;   6  | 0x18 | 10a7000c     | beq  $5,$7,end      (not taken, $5!=7)
+;   7  | 0x1c | 0064202a     | slt  $4,$3,$4       ($4=0, 12 < 7 false)
+;   8  | 0x20 | 10800002     | beq  $4,$0,around   (taken, $4==0)
+;   9  | 0x24 | 00000000     | nop
+;  10  | 0x28 | 20050000     | addi $5,$0,0        (skipped)
+;  11  | 0x2c | 00e2202a     | slt  $4,$7,$2       ($4=1, 3<5 true)  [around:]
+;  12  | 0x30 | 00853820     | add  $7,$4,$5       ($7=1+11=12)
+;  13  | 0x34 | 00e23822     | sub  $7,$7,$2       ($7=12-5=7)
+;  14  | 0x38 | ac670044     | sw   $7,68($3)      mem[80]=7
+;  15  | 0x3c | 8c020050     | lw   $2,80($0)      $2=mem[80]=7
+;  16  | 0x40 | 08000013     | j    end(0x4c)
+;  17  | 0x44 | 00000000     | nop
+;  18  | 0x48 | 20020001     | addi $2,$0,1        (skipped)
+;  19  | 0x4c | ac020054     | sw   $2,84($0)      -> dataadr=84, writedata=7 => PASS [end:]
+; =============================================================
+memory_initialization_radix=16;
+memory_initialization_vector=
+20020005
+2003000c
+2067fff7
+00e22025
+00642824
+00a42820
+10a7000c
+0064202a
+10800002
+00000000
+20050000
+00e2202a
+00853820
+00e23822
+ac670044
+8c020050
+08000013
+00000000
+20020001
+ac020054;

@@ -1,2 +1,0 @@
-更多示例请访问官方示例代码仓：https://gitcode.com/Cangjie/Cangjie-Examples
-开发者空间在线案例教程：https://devstation.connect.huaweicloud.com/space/devportal/casecenter，搜索“仓颉”

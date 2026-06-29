@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>毛概简答题背诵资料 · 题目—答案版</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #FDF8F2;
+    --paper-warm: #F8F1E5;
+    --ink: #1A1918;
+    --ink-80: rgba(26, 25, 24, 0.82);
+    --ink-60: rgba(26, 25, 24, 0.60);
+    --ink-40: rgba(26, 25, 24, 0.40);
+    --ink-12: rgba(26, 25, 24, 0.12);
+    --ink-06: rgba(26, 25, 24, 0.06);
+
+    --red: #B22222;
+    --red-deep: #8B1A1A;
+    --red-bright: #C41E3A;
+    --red-warm: #D44A4A;
+    --red-light: rgba(178, 34, 34, 0.08);
+    --red-glow: rgba(178, 34, 34, 0.04);
+
+    --gold: #B8860B;
+    --gold-light: rgba(184, 134, 11, 0.12);
+
+    --serif: "Noto Serif SC", "Songti SC", "SimSun", "Source Han Serif SC", Georgia, serif;
+    --sans: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, system-ui, sans-serif;
+    --mono: "JetBrains Mono", "SF Mono", "Cascadia Code", ui-monospace, monospace;
+
+    --measure: 42rem;
+    --sidebar-w: 16rem;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "kern" 1, "liga" 1;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.8;
+    text-wrap: pretty;
+  }
+
+  /* ── Hero ─────────────────────── */
+  .hero {
+    position: relative;
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 30%, var(--red-glow), transparent),
+      radial-gradient(ellipse 60% 80% at 20% 80%, rgba(184,134,11,0.06), transparent),
+      radial-gradient(ellipse 60% 80% at 80% 80%, rgba(184,134,11,0.06), transparent);
+    pointer-events: none;
+  }
+  .hero-topline {
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 900;
+    color: var(--ink);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    max-width: 20em;
+    margin: 0 auto 1rem;
+    position: relative;
+  }
+  .hero h1 .accent {
+    color: var(--red);
+  }
+  .hero-sub {
+    font-family: var(--serif);
+    font-size: 1.15rem;
+    font-weight: 400;
+    color: var(--ink-60);
+    line-height: 1.6;
+    max-width: 28em;
+    margin: 0 auto 2.5rem;
+    position: relative;
+  }
+  .hero-ornament {
+    width: 3rem;
+    height: 2px;
+    background: var(--red);
+    margin: 0 auto;
+    position: relative;
+    opacity: 0.5;
+  }
+  .hero-meta {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--ink-40);
+    letter-spacing: 0.1em;
+    position: relative;
+  }
+  .hero-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .hero-meta .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--red);
+    opacity: 0.5;
+    display: inline-block;
+  }
+
+  /* ── Layout ──────────────────── */
+  .page-wrap {
+    display: flex;
+    max-width: calc(var(--measure) + var(--sidebar-w) + 6rem);
+    margin: 0 auto;
+    padding: 0 2rem 6rem;
+    gap: 3rem;
+    position: relative;
+  }
+
+  /* ── Sidebar TOC ────────────── */
+  .toc-col {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    position: relative;
+  }
+  .toc-sticky {
+    position: sticky;
+    top: 2rem;
+    padding: 1.5rem 0;
+  }
+  .toc-label {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ink-40);
+    margin-bottom: 1.25rem;
+  }
+  .toc-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    max-height: calc(100vh - 8rem);
+    overflow-y: auto;
+  }
+  .toc-list a {
+    display: block;
+    text-decoration: none;
+    color: var(--ink-60);
+    font-size: 0.82rem;
+    font-family: var(--sans);
+    padding: 0.35rem 0.6rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    line-height: 1.4;
+    border-left: 2px solid transparent;
+  }
+  .toc-list a:hover {
+    color: var(--ink);
+    background: var(--ink-06);
+  }
+  .toc-list a.active {
+    color: var(--red);
+    border-left-color: var(--red);
+    background: var(--red-light);
+  }
+  .toc-num {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--ink-40);
+    margin-right: 0.3em;
+  }
+
+  /* ── Main Content ────────────── */
+  .main-col {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* section divider */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 3rem 0 2.5rem;
+  }
+  .section-divider::before,
+  .section-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--ink-12);
+  }
+  .section-divider::before { flex: 0.3; }
+  .section-divider .diamond {
+    width: 6px; height: 6px;
+    background: var(--red);
+    transform: rotate(45deg);
+    flex-shrink: 0;
+    opacity: 0.5;
+  }
+
+  /* ── Q&A Card ───────────────── */
+  .qa-block {
+    margin-bottom: 3.5rem;
+    scroll-margin-top: 2rem;
+  }
+  .qa-number {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--red);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+  .qa-question {
+    font-family: var(--serif);
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.5;
+    margin-bottom: 0.6rem;
+    letter-spacing: 0.005em;
+  }
+  .qa-alt {
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    color: var(--ink-40);
+    line-height: 1.5;
+    margin-bottom: 1.25rem;
+    font-style: italic;
+  }
+  .qa-alt::before {
+    content: "可能换法：";
+    font-style: normal;
+    font-weight: 500;
+    color: var(--ink-60);
+  }
+  .qa-answer-label {
+    display: inline-block;
+    font-family: var(--sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--red);
+    background: var(--red-light);
+    padding: 0.2em 0.8em;
+    border-radius: 3px;
+    margin-bottom: 1rem;
+  }
+  .qa-answer {
+    font-family: var(--sans);
+    font-size: 0.95rem;
+    line-height: 1.9;
+    color: var(--ink-80);
+  }
+  .qa-answer p {
+    margin-bottom: 0.85rem;
+    text-indent: 2em;
+  }
+  .qa-answer p:first-child { text-indent: 0; }
+  .qa-answer strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ── Footer ─────────────────── */
+  .page-footer {
+    border-top: 1px solid var(--ink-12);
+    padding: 2.5rem 2rem;
+    text-align: center;
+    max-width: calc(var(--measure) + var(--sidebar-w) + 6rem);
+    margin: 0 auto;
+  }
+  .page-footer p {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--ink-40);
+  }
+  .page-footer .red-dot {
+    color: var(--red);
+  }
+
+  /* ── Print ──────────────────── */
+  @media print {
+    .toc-col { display: none; }
+    .hero { padding: 2rem 0 1.5rem; }
+    .qa-block { break-inside: avoid; margin-bottom: 2rem; }
+    body { font-size: 13px; }
+  }
+
+  /* ── Mobile ─────────────────── */
+  @media (max-width: 900px) {
+    .page-wrap {
+      flex-direction: column;
+      padding: 0 1.25rem 4rem;
+    }
+    .toc-col {
+      width: 100%;
+      order: -1;
+    }
+    .toc-sticky {
+      position: static;
+      padding: 0 0 1rem;
+      border-bottom: 1px solid var(--ink-12);
+      margin-bottom: 1.5rem;
+    }
+    .toc-list {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+      max-height: none;
+      overflow-y: visible;
+    }
+    .toc-list a {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-left: none;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+    }
+    .toc-list a.active {
+      border-left-color: transparent;
+      border-bottom-color: var(--red);
+    }
+    .hero { padding: 3rem 1rem 2.5rem; }
+    .qa-question { font-size: 1.15rem; }
+    .qa-answer { font-size: 0.9rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════ HERO ════════════════ -->
+<header class="hero">
+  <div class="hero-topline">毛泽东思想与中国特色社会主义理论体系概论</div>
+  <h1>毛概<span class="accent">简答题</span>背诵资料</h1>
+  <p class="hero-sub">题目—答案版 · 共二十七题 · 涵盖马克思主义中国化时代化、新民主主义革命、社会主义改造、改革开放与中国特色社会主义理论体系</p>
+  <div class="hero-ornament"></div>
+  <div class="hero-meta">
+    <span><span class="dot"></span> 27 道核心简答题</span>
+    <span>毛泽东思想 · 邓小平理论</span>
+    <span>期末备考专用</span>
+  </div>
+</header>
+
+<!-- ════════════════ CONTENT ════════════════ -->
+<div class="page-wrap">
+
+  <!-- ── Sidebar TOC ── -->
+  <nav class="toc-col">
+    <div class="toc-sticky">
+      <div class="toc-label">目 录</div>
+      <ul class="toc-list" id="tocList">
+        <li><a href="#q1"><span class="toc-num">01</span>马克思主义中国化时代化含义</a></li>
+        <li><a href="#q2"><span class="toc-num">02</span>马克思主义中国化时代化必要性</a></li>
+        <li><a href="#q3"><span class="toc-num">03</span>内涵与必要性的区别</a></li>
+        <li><a href="#q4"><span class="toc-num">04</span>毛泽东思想与中特理论体系关系</a></li>
+        <li><a href="#q5"><span class="toc-num">05</span>毛泽东思想形成发展的历史条件</a></li>
+        <li><a href="#q6"><span class="toc-num">06</span>毛泽东思想活的灵魂</a></li>
+        <li><a href="#q7"><span class="toc-num">07</span>科学评价毛泽东和毛泽东思想</a></li>
+        <li><a href="#q8"><span class="toc-num">08</span>新民主主义革命总路线</a></li>
+        <li><a href="#q9"><span class="toc-num">09</span>新民主主义革命基本纲领</a></li>
+        <li><a href="#q10"><span class="toc-num">10</span>农村包围城市道路必然性</a></li>
+        <li><a href="#q11"><span class="toc-num">11</span>三大法宝及其关系</a></li>
+        <li><a href="#q12"><span class="toc-num">12</span>新民主主义社会的过渡性质</a></li>
+        <li><a href="#q13"><span class="toc-num">13</span>过渡时期总路线：一化三改</a></li>
+        <li><a href="#q14"><span class="toc-num">14</span>社会主义改造的历史经验</a></li>
+        <li><a href="#q15"><span class="toc-num">15</span>社会主义建设道路初步探索意义</a></li>
+        <li><a href="#q16"><span class="toc-num">16</span>初步探索的经验教训</a></li>
+        <li><a href="#q17"><span class="toc-num">17</span>初步探索的重要理论成果</a></li>
+        <li><a href="#q18"><span class="toc-num">18</span>初步探索的意义与局限</a></li>
+        <li><a href="#q19"><span class="toc-num">19</span>改革开放前后两个时期关系</a></li>
+        <li><a href="#q20"><span class="toc-num">20</span>中特理论体系形成发展的条件</a></li>
+        <li><a href="#q21"><span class="toc-num">21</span>邓小平理论首要基本问题</a></li>
+        <li><a href="#q22"><span class="toc-num">22</span>邓小平理论的精髓</a></li>
+        <li><a href="#q23"><span class="toc-num">23</span>邓小平理论形成发展过程</a></li>
+        <li><a href="#q24"><span class="toc-num">24</span>解放思想实事求是与改革开放</a></li>
+        <li><a href="#q25"><span class="toc-num">25</span>社会主义初级阶段理论与基本路线</a></li>
+        <li><a href="#q26"><span class="toc-num">26</span>改革开放与社会主义制度</a></li>
+        <li><a href="#q27"><span class="toc-num">27</span>邓小平理论的历史地位</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ── Main ── -->
+  <main class="main-col">
+
+<!-- ═══ 1 ═══ -->
+<article class="qa-block" id="q1">
+  <div class="qa-number">第 1 题</div>
+  <h2 class="qa-question">马克思主义为什么必须在中国落地生根、体现时代要求？其基本含义是什么？</h2>
+  <p class="qa-alt">怎样理解马克思主义中国化时代化？马克思主义中国化时代化主要解决什么问题？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>马克思主义中国化时代化，就是坚持把马克思主义基本原理同中国具体实际相结合、同中华优秀传统文化相结合。它要求我们立足中国国情和时代特点，运用马克思主义的立场、观点和方法，解决中国革命、建设、改革中的实际问题。</p>
+    <p>同时，马克思主义中国化时代化还要求总结中国实践经验，并把这些经验上升为新的理论成果，不断回答时代提出的新课题。它不是简单照搬马克思主义经典作家的个别结论，而是要根据中国的具体实际和时代发展要求，使马克思主义不断获得新的生命力。</p>
+    <p>此外，马克思主义中国化时代化还要求用中国人民喜闻乐见的民族形式表达出来，使马克思主义能够为中国人民所理解、所接受、所掌握，真正做到在中国落地生根、深入人心。</p>
+  </div>
+</article>
+
+<!-- ═══ 2 ═══ -->
+<article class="qa-block" id="q2">
+  <div class="qa-number">第 2 题</div>
+  <h2 class="qa-question">为什么不能把马克思主义当作现成公式照搬，而必须推进中国化时代化？</h2>
+  <p class="qa-alt">马克思主义中国化时代化的必要性是什么？为什么说马克思主义必须同中国实际相结合？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>马克思主义中国化时代化具有必然性和必要性。第一，马克思主义必须同中国具体实际相结合，才能真正解决中国革命、建设、改革中的实际问题。中国有自己的历史传统、社会条件和现实国情，不能简单照搬外国经验和书本结论。</p>
+    <p>第二，马克思主义必须中国化、本土化，才能在中国落地生根、深入人心。只有把马克思主义同中国社会实际和中华优秀传统文化结合起来，才能使它成为中国人民能够理解、接受和运用的科学理论。</p>
+    <p>第三，时代在发展，实践在变化，马克思主义也必须不断时代化。不同历史时期有不同的主要任务和时代课题，只有不断回答新的时代问题，马克思主义才能保持旺盛生命力。</p>
+    <p>第四，推进马克思主义中国化时代化，也是马克思主义理论自身发展的内在要求。马克思主义不是僵化的教条，而是随着实践发展而不断丰富发展的科学理论。</p>
+  </div>
+</article>
+
+<!-- ═══ 3 ═══ -->
+<article class="qa-block" id="q3">
+  <div class="qa-number">第 3 题</div>
+  <h2 class="qa-question">有人说「内涵」和「必要性」都是讲马克思主义中国化时代化，这两者到底有什么区别？</h2>
+  <p class="qa-alt">如何区分马克思主义中国化时代化的「是什么」和「为什么」？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>马克思主义中国化时代化的内涵，主要回答的是「什么是马克思主义中国化时代化」以及「怎样推进马克思主义中国化时代化」。它强调的是基本含义、实现路径和表现形式，比如要坚持把马克思主义基本原理同中国具体实际相结合、同中华优秀传统文化相结合，要解决中国实际问题，要形成新的理论成果，并用中国人民喜闻乐见的形式表达出来。</p>
+    <p>而马克思主义中国化时代化的必要性，主要回答的是「为什么必须推进马克思主义中国化时代化」。它强调的是现实原因、理论原因和实践要求，比如只有推进马克思主义中国化时代化，才能解决中国实际问题，才能使马克思主义在中国落地生根，才能回答时代课题，也才能推动马克思主义理论自身发展。</p>
+    <p>简单说，内涵侧重回答「是什么、怎么做」，必要性侧重回答「为什么必须这样做」。</p>
+  </div>
+</article>
+
+<div class="section-divider"><span class="diamond"></span></div>
+
+<!-- ═══ 4 ═══ -->
+<article class="qa-block" id="q4">
+  <div class="qa-number">第 4 题</div>
+  <h2 class="qa-question">为什么说毛泽东思想和中国特色社会主义理论体系不是割裂的，而是既继承又发展的关系？</h2>
+  <p class="qa-alt">如何理解毛泽东思想与中国特色社会主义理论体系是一脉相承又与时俱进的？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>毛泽东思想和中国特色社会主义理论体系是一脉相承又与时俱进的关系。</p>
+    <p>一方面，二者是一脉相承的。毛泽东思想是马克思主义中国化时代化的第一次历史性飞跃，为中国特色社会主义理论体系提供了重要思想基础和理论准备。二者都坚持马克思主义基本原理，都坚持实事求是、群众路线、独立自主等基本立场、观点和方法。例如，中国特色社会主义理论体系仍然坚持从中国实际出发，强调解放思想、实事求是，这与毛泽东思想的活的灵魂是一脉相承的。</p>
+    <p>另一方面，二者又是与时俱进的。中国特色社会主义理论体系是在改革开放和社会主义现代化建设新时期形成发展的，是在新的时代条件和实践基础上对毛泽东思想的继承和发展。它围绕「什么是社会主义、怎样建设社会主义」「建设什么样的党、怎样建设党」「实现什么样的发展、怎样发展」等新的重大问题，形成了新的理论成果。</p>
+    <p>因此，毛泽东思想和中国特色社会主义理论体系既不是相互割裂的，也不是简单重复的，而是在坚持马克思主义基本原理基础上的继承、发展和创新。</p>
+  </div>
+</article>
+
+<!-- ═══ 5 ═══ -->
+<article class="qa-block" id="q5">
+  <div class="qa-number">第 5 题</div>
+  <h2 class="qa-question">毛泽东思想不是凭空产生的，它是在怎样的历史实践中逐步形成和发展的？</h2>
+  <p class="qa-alt">毛泽东思想形成发展的历史条件是什么？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>毛泽东思想是在中国共产党领导中国革命和建设的实践中形成和发展的。它不是凭空产生的，也不是照搬外国经验的结果，而是在解决中国革命和建设实际问题的过程中逐步形成、成熟和发展的。</p>
+    <p>具体来说，毛泽东思想主要形成于新民主主义革命时期。在这一时期，中国共产党面对半殖民地半封建社会的基本国情，探索出农村包围城市、武装夺取政权的革命道路，形成了新民主主义革命理论。</p>
+    <p>在社会主义革命时期，毛泽东思想继续发展。中国共产党领导人民完成社会主义改造，确立社会主义基本制度，丰富了关于中国如何由新民主主义向社会主义过渡的理论。</p>
+    <p>在社会主义建设时期，党对适合中国情况的社会主义建设道路进行了初步探索，提出了正确处理人民内部矛盾、调动一切积极因素为社会主义事业服务等重要思想，进一步发展了毛泽东思想。</p>
+  </div>
+</article>
+
+<!-- ═══ 6 ═══ -->
+<article class="qa-block" id="q6">
+  <div class="qa-number">第 6 题</div>
+  <h2 class="qa-question">为什么说「实事求是、群众路线、独立自主」是毛泽东思想最核心、最有生命力的内容？</h2>
+  <p class="qa-alt">如何理解毛泽东思想活的灵魂？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>毛泽东思想活的灵魂包括三个方面：实事求是、群众路线、独立自主。</p>
+    <p>第一，实事求是是毛泽东思想的精髓。它要求一切从实际出发，理论联系实际，在实践中检验真理和发展真理。中国革命和建设不能照搬别国模式，必须从中国的具体国情出发，探索符合中国实际的道路。</p>
+    <p>第二，群众路线是党的根本工作路线。它要求一切为了群众，一切依靠群众，从群众中来，到群众中去。中国革命之所以能够取得胜利，一个重要原因就是党能够深入群众、发动群众、依靠群众，把人民群众的力量组织起来。</p>
+    <p>第三，独立自主是中国革命和建设必须坚持的重要原则。它要求中国共产党坚持独立思考，走自己的路，把中国革命和建设放在自己力量的基点上，同时积极争取外援但不依赖外援。独立自主并不是闭关自守，而是在坚持自主原则基础上学习和借鉴外部有益经验。</p>
+  </div>
+</article>
+
+<div class="section-divider"><span class="diamond"></span></div>
+
+<!-- ═══ 7 ═══ -->
+<article class="qa-block" id="q7">
+  <div class="qa-number">第 7 题</div>
+  <h2 class="qa-question">评价毛泽东和毛泽东思想时，为什么既不能搞「两个凡是」，也不能全盘否定？</h2>
+  <p class="qa-alt">怎样科学评价毛泽东和毛泽东思想的历史地位？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>科学评价毛泽东和毛泽东思想，必须坚持实事求是的态度，既要反对「两个凡是」的错误观点，也要反对全盘否定毛泽东和毛泽东思想的错误观点。</p>
+    <p>毛泽东是伟大的马克思主义者，伟大的无产阶级革命家、战略家和理论家。他为中国革命的胜利、新中国的建立和社会主义制度的确立作出了不可磨灭的贡献。虽然毛泽东晚年犯了错误，但他的功绩是第一位的，错误是第二位的，不能因为他的晚年错误而否定他的历史功绩。</p>
+    <p>毛泽东思想是马克思主义中国化时代化的第一个重大理论成果，是中国共产党集体智慧的结晶，是党必须长期坚持的指导思想。它不是毛泽东个人所有思想的简单总和，而是被实践证明了的关于中国革命和建设的正确理论原则和经验总结。</p>
+    <p>因此，必须把毛泽东晚年的错误同毛泽东思想的科学体系区分开来，既不能神化毛泽东，也不能否定毛泽东和毛泽东思想的历史地位。</p>
+  </div>
+</article>
+
+<!-- ═══ 8 ═══ -->
+<article class="qa-block" id="q8">
+  <div class="qa-number">第 8 题</div>
+  <h2 class="qa-question">中国的新民主主义革命为什么不是旧式资产阶级革命，而是由无产阶级领导的新型革命？</h2>
+  <p class="qa-alt">如何理解新民主主义革命的总路线？新民主主义革命的领导、对象和动力是什么？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>新民主主义革命的总路线是：无产阶级领导的，人民大众的，反对帝国主义、封建主义和官僚资本主义的革命。</p>
+    <p>其中，无产阶级及其政党的领导，是新民主主义革命区别于旧民主主义革命的根本标志，也是革命取得胜利的根本保证。中国共产党代表先进生产力和最广大人民群众的根本利益，能够领导中国革命走向胜利。</p>
+    <p>新民主主义革命的对象是帝国主义、封建主义和官僚资本主义，也就是压在中国人民头上的「三座大山」。革命的任务就是推翻它们的反动统治，实现民族独立和人民解放。</p>
+    <p>新民主主义革命的动力包括工人阶级、农民阶级、城市小资产阶级和民族资产阶级。其中，农民是中国革命的主力军，工人和农民是革命的基本力量。只有把最广大的人民群众动员起来，革命才能取得胜利。</p>
+  </div>
+</article>
+
+<!-- ═══ 9 ═══ -->
+<article class="qa-block" id="q9">
+  <div class="qa-number">第 9 题</div>
+  <h2 class="qa-question">新民主主义革命胜利后，中国要建立什么样的政治、经济和文化制度？</h2>
+  <p class="qa-alt">新民主主义革命的基本纲领包括哪些内容？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>新民主主义革命的基本纲领包括政治、经济、文化三个方面。</p>
+    <p>政治纲领是：推翻帝国主义、封建主义和官僚资本主义的统治，建立无产阶级领导的、以工农联盟为基础的、各革命阶级联合专政的新民主主义共和国。这种共和国既不同于资产阶级专政的共和国，也不是立即进入社会主义共和国，而是适合中国革命阶段的新民主主义政权形式。</p>
+    <p>经济纲领是：没收封建地主阶级的土地归农民所有，没收官僚资本归新民主主义国家所有，保护民族工商业。这样既能废除封建土地制度，满足农民土地要求，又能掌握国家经济命脉，同时团结民族资产阶级参加革命和建设。</p>
+    <p>文化纲领是：建设民族的、科学的、大众的文化。所谓民族的，就是反对帝国主义压迫，维护中华民族的尊严和独立；所谓科学的，就是反对封建迷信，主张实事求是和科学精神；所谓大众的，就是文化要为人民大众服务。</p>
+  </div>
+</article>
+
+<div class="section-divider"><span class="diamond"></span></div>
+
+<!-- ═══ 10 ═══ -->
+<article class="qa-block" id="q10">
+  <div class="qa-number">第 10 题</div>
+  <h2 class="qa-question">为什么中国革命没有走「城市中心道路」，而是走上农村包围城市、武装夺取政权的道路？</h2>
+  <p class="qa-alt">新民主主义革命道路形成的必然性是什么？为什么说这条道路是由中国国情决定的？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>新民主主义革命道路的形成具有必然性，是由中国半殖民地半封建社会的基本国情决定的。</p>
+    <p>第一，中国外无民族独立，内无民主制度，帝国主义、封建主义和官僚资本主义力量强大，反动统治主要集中在城市。革命力量在城市中相对薄弱，如果照搬俄国十月革命那种以城市为中心的道路，很难取得胜利。</p>
+    <p>第二，中国政治经济发展极不平衡，广大农村是敌人统治的薄弱环节。这为革命力量在农村保存、发展和壮大提供了可能。</p>
+    <p>第三，农民受压迫最深，是中国革命的主力军。中国共产党只有深入农村，发动农民，建立农村革命根据地，才能形成强大的革命力量。</p>
+    <p>因此，中国革命不能走以城市为中心的道路，而必须把党的工作重心转向农村，走农村包围城市、武装夺取政权的革命道路。这条道路是马克思主义基本原理同中国具体实际相结合的伟大创造。</p>
+  </div>
+</article>
+
+<!-- ═══ 11 ═══ -->
+<article class="qa-block" id="q11">
+  <div class="qa-number">第 11 题</div>
+  <h2 class="qa-question">中国共产党为什么能够在复杂艰难的革命斗争中取得胜利？三大法宝起了什么作用？</h2>
+  <p class="qa-alt">新民主主义革命的三大法宝是什么？它们之间是什么关系？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>新民主主义革命的三大法宝是统一战线、武装斗争、党的建设。</p>
+    <p>统一战线是中国革命取得胜利的重要法宝。中国革命的敌人十分强大，党必须团结一切可以团结的力量，建立最广泛的革命统一战线，才能孤立主要敌人，壮大革命力量。</p>
+    <p>武装斗争是中国革命的主要斗争形式。由于中国没有民主制度，反动统治阶级长期依靠武装力量镇压人民，中国革命必须以革命的武装反对反革命的武装。</p>
+    <p>党的建设是中国革命胜利的根本保证。统一战线和武装斗争是战胜敌人的两个基本武器，而党的组织则是掌握这两个武器的英勇战士。只有把党建设好，才能正确领导统一战线和武装斗争。</p>
+    <p>三者相互联系、密不可分，其中党的建设起着核心和根本保证作用。</p>
+  </div>
+</article>
+
+<!-- ═══ 12 ═══ -->
+<article class="qa-block" id="q12">
+  <div class="qa-number">第 12 题</div>
+  <h2 class="qa-question">新中国成立后，为什么新民主主义社会不是一个固定不变的社会形态，而是要向社会主义过渡？</h2>
+  <p class="qa-alt">为什么说新民主主义社会是一个过渡性质的社会？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>新民主主义社会是一个过渡性质的社会，它不是一个独立的、固定不变的社会形态，而是由新民主主义向社会主义转变的过渡性社会。</p>
+    <p>第一，从经济成分看，新民主主义社会存在多种经济成分，包括社会主义经济、个体经济和资本主义经济等。其中社会主义经济居于领导地位，但个体经济和资本主义经济仍然大量存在，这说明社会经济结构具有明显的过渡性。</p>
+    <p>第二，从阶级构成看，社会上仍然存在工人阶级、农民阶级、小资产阶级和民族资产阶级等不同阶级和阶层。不同阶级之间既有合作，也存在矛盾。</p>
+    <p>第三，从社会主要矛盾看，随着社会主义因素的发展，工人阶级和资产阶级之间的矛盾、社会主义道路和资本主义道路之间的矛盾逐步上升。这决定了新民主主义社会必然要继续向社会主义社会转变。</p>
+    <p>因此，新民主主义社会不是独立的社会形态，而是走向社会主义的过渡性社会。</p>
+  </div>
+</article>
+
+<div class="section-divider"><span class="diamond"></span></div>
+
+<!-- ═══ 13 ═══ -->
+<article class="qa-block" id="q13">
+  <div class="qa-number">第 13 题</div>
+  <h2 class="qa-question">新中国成立后，党为什么既要搞工业化，又要进行社会主义改造？</h2>
+  <p class="qa-alt">如何理解党在过渡时期的总路线？什么是「一化三改」「一体两翼」？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>党在过渡时期的总路线，是指从中华人民共和国成立到社会主义改造基本完成这一时期，党提出的总任务。</p>
+    <p>其主要内容是：在一个相当长的时期内，逐步实现国家的社会主义工业化，并逐步实现国家对农业、手工业和资本主义工商业的社会主义改造。这一内容概括起来就是「一化三改」。</p>
+    <p>「一化」指社会主义工业化，「三改」指对农业、手工业和资本主义工商业的社会主义改造。其中，社会主义工业化是主体，是「一体」；对农业、手工业和资本主义工商业的社会主义改造是「两翼」。农业和手工业改造是一翼，资本主义工商业改造是另一翼。</p>
+    <p>「一化」和「三改」相互联系、相互促进。工业化要求改变落后的生产关系，为社会主义建设提供物质基础；社会主义改造则为工业化创造适合社会主义发展的制度条件。它们体现了发展生产力和变革生产关系的统一。</p>
+  </div>
+</article>
+
+<!-- ═══ 14 ═══ -->
+<article class="qa-block" id="q14">
+  <div class="qa-number">第 14 题</div>
+  <h2 class="qa-question">我国社会主义改造为什么能够比较平稳地完成？其中有哪些值得总结的经验？</h2>
+  <p class="qa-alt">社会主义改造的历史经验是什么？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>社会主义改造的历史经验主要包括三个方面。</p>
+    <p>第一，坚持社会主义工业化建设与社会主义改造同时并举，把发展生产力和变革生产关系结合起来。也就是说，党不是单纯进行生产关系改造，而是在推进国家工业化的同时，对农业、手工业和资本主义工商业进行社会主义改造。</p>
+    <p>第二，采取积极引导、逐步过渡的方式。比如农业改造经历了互助组、初级农业生产合作社到高级农业生产合作社的逐步发展过程，使农民能够逐步适应社会主义集体经济。</p>
+    <p>第三，用和平方法进行改造。尤其是对资本主义工商业，党采取和平赎买政策，通过国家资本主义形式逐步实现对资本主义工商业的社会主义改造，避免了剧烈的社会冲突，实现了较为平稳的社会变革。</p>
+    <p>这些经验说明，我国社会主义改造不是简单粗暴地完成的，而是在党的领导下，通过逐步过渡和和平方式实现的深刻社会变革。</p>
+  </div>
+</article>
+
+<!-- ═══ 15 ═══ -->
+<article class="qa-block" id="q15">
+  <div class="qa-number">第 15 题</div>
+  <h2 class="qa-question">社会主义基本制度确立后，党为什么还要继续探索适合中国情况的社会主义建设道路？这种探索有什么意义？</h2>
+  <p class="qa-alt">党对社会主义建设道路初步探索的重大意义是什么？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>党对社会主义建设道路的初步探索具有重大意义。</p>
+    <p>第一，它巩固和发展了我国社会主义制度。社会主义基本制度确立后，如何建设社会主义成为新的重大课题。党在探索中推进工业、农业、国防、科学文化等方面建设，逐步建立起比较独立完整的工业体系和国民经济体系，为社会主义制度的巩固提供了重要支撑。</p>
+    <p>第二，它为开创中国特色社会主义提供了宝贵经验、理论准备和物质基础。例如，在探索过程中，党提出正确处理人民内部矛盾、调动一切积极因素为社会主义事业服务、走中国工业化道路等重要思想，这些都为后来改革开放和中国特色社会主义道路的形成提供了重要启示。</p>
+    <p>第三，它丰富了科学社会主义理论和实践。中国共产党没有简单照搬外国社会主义建设模式，而是努力把马克思主义基本原理同中国实际结合起来，探索适合中国情况的社会主义建设道路，拓展了人们对社会主义建设规律的认识。</p>
+    <p>因此，虽然初步探索中也有曲折和失误，但它的历史意义是重要的，为后来中国特色社会主义的开创奠定了重要基础。</p>
+  </div>
+</article>
+
+<div class="section-divider"><span class="diamond"></span></div>
+
+<!-- ═══ 16 ═══ -->
+<article class="qa-block" id="q16">
+  <div class="qa-number">第 16 题</div>
+  <h2 class="qa-question">社会主义建设初步探索中既有成绩也有失误，这些经验教训对后来有什么启示？</h2>
+  <p class="qa-alt">党对社会主义建设道路初步探索的经验教训是什么？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>党对社会主义建设道路初步探索的经验教训主要包括以下几个方面。</p>
+    <p>第一，必须把马克思主义基本原理同中国具体实际相结合，探索符合中国特点的社会主义建设道路。社会主义建设不能照搬苏联模式，也不能照搬别国经验，必须从中国国情出发。</p>
+    <p>第二，必须正确认识社会主义社会的主要矛盾和根本任务，集中力量发展生产力。社会主义制度建立后，党的工作重心应当转向经济建设，不能把阶级斗争扩大化。</p>
+    <p>第三，必须从实际出发进行社会主义建设，建设规模和速度要同国力相适应，不能急于求成。比如「大跃进」脱离实际，片面追求高速度，造成了严重教训。</p>
+    <p>第四，必须发展社会主义民主，健全社会主义法制。要反对个人崇拜，防止权力过分集中，保障党和国家政治生活正常运行。</p>
+    <p>第五，必须坚持党的民主集中制和集体领导制度，加强执政党建设。执政党必须不断提高领导水平和执政能力，防止主观主义和官僚主义。</p>
+    <p>第六，必须坚持对外开放，学习和借鉴人类文明成果，不能关起门来搞建设。社会主义建设需要吸收世界上一切有益经验，为我所用。</p>
+  </div>
+</article>
+
+<!-- ═══ 17 ═══ -->
+<article class="qa-block" id="q17">
+  <div class="qa-number">第 17 题</div>
+  <h2 class="qa-question">在社会主义建设初步探索时期，党提出了哪些重要思想成果？</h2>
+  <p class="qa-alt">党对社会主义建设道路初步探索形成了哪些重要理论成果？《论十大关系》和人民内部矛盾理论有什么地位？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>党对社会主义建设道路初步探索形成的重要理论成果主要包括以下几个方面。</p>
+    <p>第一，提出了调动一切积极因素为社会主义事业服务的思想。毛泽东在《论十大关系》中提出，要正确处理重工业和轻工业、农业，沿海工业和内地工业，经济建设和国防建设等关系，其基本方针就是努力把党内党外、国内国外的一切积极因素，直接地、间接地调动起来，为社会主义建设服务。</p>
+    <p>第二，提出了正确认识和处理社会主义社会矛盾的思想。党认识到，社会主义社会仍然存在矛盾，但这些矛盾有敌我矛盾和人民内部矛盾之分。正确处理人民内部矛盾，成为国家政治生活的重要主题。</p>
+    <p>第三，提出了走中国工业化道路的思想。党强调要处理好重工业、轻工业和农业的关系，不能照搬苏联片面发展重工业的模式，而要从中国实际出发，走适合中国国情的工业化道路。</p>
+    <p>第四，提出了一系列社会主义建设的方针政策。例如，在科学文化工作中实行「百花齐放、百家争鸣」；在党派关系上实行「长期共存、互相监督」；在经济建设中强调统筹兼顾、适当安排。</p>
+    <p>这些理论成果为后来中国特色社会主义道路的形成提供了重要思想资源和理论准备。</p>
+  </div>
+</article>
+
+<!-- ═══ 18 ═══ -->
+<article class="qa-block" id="q18">
+  <div class="qa-number">第 18 题</div>
+  <h2 class="qa-question">对社会主义建设初步探索应该如何评价？为什么既要看到意义，也要看到局限？</h2>
+  <p class="qa-alt">党对社会主义建设道路初步探索的意义和局限是什么？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>党对社会主义建设道路的初步探索既有重大意义，也存在一定局限，必须坚持历史唯物主义的态度全面评价。</p>
+    <p>从意义看，第一，它巩固和发展了我国社会主义制度。社会主义制度确立后，党通过探索社会主义建设道路，推动了国家经济、政治、文化等方面建设，使社会主义制度在中国站稳脚跟。</p>
+    <p>第二，它为开创中国特色社会主义提供了宝贵经验、理论准备和物质基础。探索中形成的正确处理人民内部矛盾、调动一切积极因素、走中国工业化道路等思想，为后来改革开放提供了重要启示。</p>
+    <p>第三，它丰富了科学社会主义理论和实践。中国共产党结合中国实际探索社会主义建设道路，拓展了马克思主义关于社会主义建设的理论认识。</p>
+    <p>从局限看，由于当时党对社会主义建设规律的认识还不够深刻，经验不足，在探索中也出现了脱离实际、急于求成、阶级斗争扩大化等失误。例如「大跃进」和人民公社化运动中存在冒进倾向，给社会主义建设带来了严重教训。</p>
+    <p>因此，对这一时期既不能全盘否定，也不能只讲成绩不讲问题，而要把探索成果和经验教训都看作后来中国特色社会主义形成的重要借鉴。</p>
+  </div>
+</article>
+
+<div class="section-divider"><span class="diamond"></span></div>
+
+<!-- ═══ 19 ═══ -->
+<article class="qa-block" id="q19">
+  <div class="qa-number">第 19 题</div>
+  <h2 class="qa-question">改革开放前后的两个历史时期为什么不能相互否定？</h2>
+  <p class="qa-alt">如何理解改革开放前后两个历史时期的关系？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>改革开放前后两个历史时期，既相互联系又有重大区别，但本质上都是党领导人民进行社会主义建设的实践探索。</p>
+    <p>改革开放前的社会主义建设探索，为改革开放后开创中国特色社会主义提供了宝贵经验、理论准备和物质基础。比如，改革开放前建立起来的社会主义基本制度、独立完整的工业体系和国民经济体系，为改革开放后的发展提供了重要前提。</p>
+    <p>改革开放后的实践，是对改革开放前探索的坚持、改革和发展。改革开放不是否定社会主义制度，而是在坚持社会主义基本制度的基础上，解放和发展生产力，推进社会主义制度的自我完善和发展。</p>
+    <p>因此，不能用改革开放后的历史时期否定改革开放前的历史时期，也不能用改革开放前的历史时期否定改革开放后的历史时期。正确态度是坚持历史唯物主义，看到两个时期的联系和区别，全面认识社会主义建设的历史进程。</p>
+  </div>
+</article>
+
+<!-- ═══ 20 ═══ -->
+<article class="qa-block" id="q20">
+  <div class="qa-number">第 20 题</div>
+  <h2 class="qa-question">中国特色社会主义理论体系为什么会在改革开放新时期形成发展？</h2>
+  <p class="qa-alt">中国特色社会主义理论体系形成发展的历史条件是什么？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>中国特色社会主义理论体系是在深刻变化的国际国内条件下形成发展的。</p>
+    <p>从国际背景看，和平与发展成为时代主题，世界格局发生深刻变化，新科技革命迅速发展，经济全球化深入推进。这些变化既为中国发展带来机遇，也带来挑战。中国必须根据时代变化，思考怎样建设社会主义、怎样实现现代化。</p>
+    <p>从国内实践看，我国改革开放和社会主义现代化建设的伟大实践，为中国特色社会主义理论体系的形成发展提供了现实基础。改革开放以后，中国面临如何解放和发展生产力、如何完善社会主义制度、如何实现现代化等重大问题，迫切需要新的理论回答。</p>
+    <p>从历史经验看，党总结我国社会主义建设正反两方面经验，也借鉴世界社会主义兴衰成败的经验教训，不断深化对社会主义建设规律、共产党执政规律和人类社会发展规律的认识。</p>
+    <p>因此，中国特色社会主义理论体系是在时代主题变化、科技革命发展、改革开放实践推进和历史经验总结的基础上逐步形成和发展的。</p>
+  </div>
+</article>
+
+<!-- ═══ 21 ═══ -->
+<article class="qa-block" id="q21">
+  <div class="qa-number">第 21 题</div>
+  <h2 class="qa-question">邓小平理论为什么首先要回答「什么是社会主义、怎样建设社会主义」？</h2>
+  <p class="qa-alt">邓小平理论首要的基本理论问题是什么？如何理解社会主义本质？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>邓小平理论首要的基本理论问题是：什么是社会主义、怎样建设社会主义。</p>
+    <p>在中国这样经济文化比较落后的国家建设社会主义，是一个十分复杂的问题。过去人们对社会主义的理解有时停留在某些具体制度和形式上，甚至把计划经济、平均主义等同于社会主义。因此，必须在坚持社会主义基本制度的基础上，进一步认清社会主义本质。</p>
+    <p>邓小平指出，社会主义的本质是：解放生产力，发展生产力，消灭剥削，消除两极分化，最终达到共同富裕。这里强调，社会主义不是贫穷，社会主义的根本任务是发展生产力；社会主义也不是两极分化，而是要通过发展最终实现共同富裕。</p>
+    <p>邓小平理论正是围绕「什么是社会主义、怎样建设社会主义」这一基本问题，回答了在中国如何建设、巩固和发展社会主义的问题，推动了改革开放和社会主义现代化建设。</p>
+  </div>
+</article>
+
+<div class="section-divider"><span class="diamond"></span></div>
+
+<!-- ═══ 22 ═══ -->
+<article class="qa-block" id="q22">
+  <div class="qa-number">第 22 题</div>
+  <h2 class="qa-question">为什么说邓小平理论的精髓不是一句口号，而是一条重要思想路线？</h2>
+  <p class="qa-alt">如何把握邓小平理论的精髓？为什么说解放思想、实事求是是邓小平理论的精髓？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>邓小平理论的精髓是解放思想、实事求是。</p>
+    <p>解放思想，就是在马克思主义指导下，打破习惯势力和主观偏见的束缚，研究新情况，解决新问题。改革开放之所以能够推进，一个重要前提就是打破对传统观念和僵化模式的迷信，重新思考什么是社会主义、怎样建设社会主义。</p>
+    <p>实事求是，就是一切从实际出发，理论联系实际，在实践中检验真理和发展真理。建设中国特色社会主义，不能从书本和教条出发，而必须从中国处于社会主义初级阶段这一基本国情出发。</p>
+    <p>解放思想和实事求是是统一的。只有解放思想，才能真正做到实事求是；只有坚持实事求是，解放思想才不会偏离正确方向。邓小平理论正是在解放思想、实事求是的基础上，科学回答了什么是社会主义、怎样建设社会主义的问题，推动了改革开放和社会主义现代化建设。</p>
+    <p>因此，解放思想、实事求是不是抽象口号，而是邓小平理论的精髓和贯穿其中的思想路线。</p>
+  </div>
+</article>
+
+<!-- ═══ 23 ═══ -->
+<article class="qa-block" id="q23">
+  <div class="qa-number">第 23 题</div>
+  <h2 class="qa-question">邓小平理论不是一下子形成的，它是在怎样的历史过程中逐步形成和发展的？</h2>
+  <p class="qa-alt">如何把握邓小平理论的形成发展过程？邓小平理论是怎样成为党的指导思想的？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>邓小平理论是在改革开放和社会主义现代化建设的伟大实践中逐步形成和发展起来的。</p>
+    <p>第一，1978年党的十一届三中全会，重新确立了解放思想、实事求是的思想路线，作出了把党和国家工作中心转移到经济建设上来、实行改革开放的历史性决策，标志着我国进入改革开放和社会主义现代化建设新时期，也为邓小平理论的形成奠定了实践基础。</p>
+    <p>第二，党的十二大提出「建设有中国特色的社会主义」这一重大命题，明确了中国社会主义建设必须从中国实际出发，不能照搬外国模式。</p>
+    <p>第三，党的十三大系统阐述了社会主义初级阶段理论和党在社会主义初级阶段的基本路线，比较系统地概括了建设有中国特色社会主义理论的主要内容，标志着邓小平理论逐步形成轮廓。</p>
+    <p>第四，1992年邓小平南方谈话，深刻回答了长期束缚人们思想的许多重大认识问题，比如社会主义本质问题、计划和市场的关系问题、「三个有利于」判断标准问题等，推动邓小平理论走向成熟。</p>
+    <p>第五，党的十四大明确提出建立社会主义市场经济体制，强调用邓小平建设有中国特色社会主义理论武装全党。党的十五大正式把邓小平理论确立为党的指导思想并写入党章。</p>
+    <p>因此，邓小平理论是在总结我国社会主义建设正反两方面经验、推进改革开放实践、回答时代重大课题的过程中形成和发展起来的科学理论。</p>
+  </div>
+</article>
+
+<!-- ═══ 24 ═══ -->
+<article class="qa-block" id="q24">
+  <div class="qa-number">第 24 题</div>
+  <h2 class="qa-question">为什么说邓小平理论的精髓不是抽象口号，而是贯穿改革开放全过程的思想路线？</h2>
+  <p class="qa-alt">如何把握邓小平理论的精髓？为什么说解放思想、实事求是是邓小平理论的精髓？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>邓小平理论的精髓是解放思想、实事求是。</p>
+    <p>解放思想，就是在马克思主义指导下，打破习惯势力和主观偏见的束缚，研究新情况，解决新问题。改革开放之所以能够推进，一个重要前提就是打破对传统观念和僵化模式的迷信，重新思考什么是社会主义、怎样建设社会主义。</p>
+    <p>实事求是，就是一切从实际出发，理论联系实际，在实践中检验真理和发展真理。建设中国特色社会主义不能从书本和教条出发，而必须从我国处于社会主义初级阶段这一基本国情出发。</p>
+    <p>解放思想和实事求是是统一的。只有解放思想，才能真正做到实事求是；只有坚持实事求是，解放思想才不会偏离正确方向。邓小平理论正是在解放思想、实事求是的基础上，破除了僵化的社会主义观念，科学回答了什么是社会主义、怎样建设社会主义的问题。</p>
+    <p>判断改革和各项工作得失成败，还要坚持「三个有利于」标准，即是否有利于发展社会主义社会的生产力，是否有利于增强社会主义国家的综合国力，是否有利于提高人民的生活水平。这体现了邓小平理论坚持实践标准、发展标准和人民利益标准的鲜明特点。</p>
+  </div>
+</article>
+
+<div class="section-divider"><span class="diamond"></span></div>
+
+<!-- ═══ 25 ═══ -->
+<article class="qa-block" id="q25">
+  <div class="qa-number">第 25 题</div>
+  <h2 class="qa-question">为什么说我国处于社会主义初级阶段，是制定路线方针政策的根本依据？</h2>
+  <p class="qa-alt">如何理解社会主义初级阶段理论和党的基本路线？什么是「一个中心、两个基本点」？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>社会主义初级阶段理论，是邓小平理论的重要内容，也是党制定路线方针政策的根本依据。</p>
+    <p>社会主义初级阶段包含两层含义：第一，我国已经是社会主义社会，必须坚持社会主义，不能离开社会主义方向；第二，我国的社会主义还处在初级阶段，生产力水平还不高，制度还不完善，必须从这个实际出发，不能超越阶段。</p>
+    <p>因此，党在社会主义初级阶段的基本路线是：领导和团结全国各族人民，以经济建设为中心，坚持四项基本原则，坚持改革开放，自力更生，艰苦创业，为把我国建设成为富强、民主、文明的社会主义现代化国家而奋斗。</p>
+    <p>这条基本路线可以概括为「一个中心、两个基本点」。「一个中心」就是以经济建设为中心，因为社会主义的根本任务是发展生产力；「两个基本点」就是坚持四项基本原则和坚持改革开放。四项基本原则是立国之本，保证社会主义方向；改革开放是强国之路，是发展中国特色社会主义的必由之路。</p>
+    <p>坚持党的基本路线，关键是坚持以经济建设为中心不动摇，同时把四项基本原则和改革开放统一起来。不能只讲改革开放而放弃社会主义方向，也不能只讲原则而否定改革开放和发展生产力。</p>
+  </div>
+</article>
+
+<!-- ═══ 26 ═══ -->
+<article class="qa-block" id="q26">
+  <div class="qa-number">第 26 题</div>
+  <h2 class="qa-question">改革开放为什么被称为中国的第二次革命？它和社会主义制度是什么关系？</h2>
+  <p class="qa-alt">如何认识社会主义改革开放理论？怎样理解改革是社会主义制度的自我完善和发展？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>改革开放是邓小平理论的重要内容，是决定当代中国命运的关键抉择。</p>
+    <p>第一，改革是一场深刻的社会变革，是中国的第二次革命。这里的「革命」不是要改变社会主义基本制度，而是要改革那些不适应生产力发展的体制机制，解放和发展生产力，推动社会主义制度的自我完善和发展。</p>
+    <p>第二，改革是社会主义社会发展的直接动力。社会主义制度建立以后，并不意味着一切体制机制都已经完善。只有通过改革，破除束缚生产力发展的弊端，才能不断增强社会主义的生机和活力。</p>
+    <p>第三，改革是一项崭新的事业，也是一场伟大的实验。改革没有现成模式可以照搬，必须坚持实践标准，坚持「三个有利于」判断标准，即是否有利于发展社会主义社会生产力，是否有利于增强社会主义国家综合国力，是否有利于提高人民生活水平。</p>
+    <p>第四，对外开放是我国的基本国策。中国的发展离不开世界，关起门来搞建设是不行的。实行对外开放，有利于吸收和借鉴人类文明成果，引进资金、技术和管理经验，促进我国社会主义现代化建设。</p>
+    <p>第五，改革开放必须坚持社会主义方向。计划和市场不是区分社会主义和资本主义的根本标志，它们都是经济手段。资本主义可以有计划，社会主义也可以有市场。改革开放的目的，是更好地发展社会主义，而不是改变社会主义制度。</p>
+    <p>因此，改革开放既是解放和发展生产力的必由之路，也是社会主义制度自我完善和发展的重要途径。</p>
+  </div>
+</article>
+
+<!-- ═══ 27 ═══ -->
+<article class="qa-block" id="q27">
+  <div class="qa-number">第 27 题</div>
+  <h2 class="qa-question">为什么说邓小平理论在马克思主义中国化时代化进程中具有重要历史地位？</h2>
+  <p class="qa-alt">如何认识邓小平理论的历史地位？邓小平理论对改革开放和中国特色社会主义有什么意义？</p>
+  <span class="qa-answer-label">答案</span>
+  <div class="qa-answer">
+    <p>邓小平理论在马克思主义中国化时代化进程中具有重要历史地位。</p>
+    <p>第一，邓小平理论是马克思列宁主义、毛泽东思想的继承和发展。它坚持马克思主义基本原理，坚持实事求是的思想路线，同时又根据新的时代条件和实践要求，回答了改革开放和社会主义现代化建设中的重大问题。</p>
+    <p>第二，邓小平理论是中国特色社会主义理论体系的开篇之作。它第一次比较系统地回答了在中国这样经济文化比较落后的国家，什么是社会主义、怎样建设社会主义的问题，为中国特色社会主义道路的开创奠定了理论基础。</p>
+    <p>第三，邓小平理论是改革开放和社会主义现代化建设的科学指南。它提出社会主义本质理论、社会主义初级阶段理论、党的基本路线、改革开放理论、社会主义市场经济理论等重要思想，为中国改革开放和现代化建设指明了方向。</p>
+    <p>第四，邓小平理论是党和国家必须长期坚持的指导思想。党的十五大把邓小平理论确立为党的指导思想并写入党章，说明这一理论已经成为全党全国人民推进中国特色社会主义事业的重要思想武器。</p>
+    <p>总之，邓小平理论开辟了马克思主义中国化时代化的新境界，开创了中国特色社会主义理论体系，为改革开放和社会主义现代化建设提供了根本遵循。</p>
+  </div>
+</article>
+
+  </main>
+</div>
+
+<!-- ════════════════ FOOTER ════════════════ -->
+<footer class="page-footer">
+  <p>毛概简答题背诵资料 · 题目—答案版 <span class="red-dot">·</span> 共二十七题 <span class="red-dot">·</span> 期末备考专用</p>
+</footer>
+
+<!-- ── TOC active state tracking ── -->
+<script>
+  (function() {
+    const tocLinks = document.querySelectorAll('.toc-list a');
+    const qaBlocks = document.querySelectorAll('.qa-block');
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          tocLinks.forEach(link => {
+            link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+          });
+        }
+      });
+    }, { rootMargin: '-10% 0px -70% 0px', threshold: 0 });
+
+    qaBlocks.forEach(block => observer.observe(block));
+  })();
+</script>
+
+</body>
+</html>

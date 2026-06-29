@@ -1,0 +1,44 @@
+%!TEX program = xelatex
+\documentclass[cn,normal,black,11pt]{elegantnote}
+\usepackage{wasysym}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstset{
+    basicstyle=\small\ttfamily,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny
+}
+
+\begin{document}
+\newcommand{\stuname}{姓名}          % 修改为你的姓名
+\newcommand{\stuclass}{班级}          % 修改为你的班级
+\newcommand{\expname}{实验二 存储器与控制器实验}
+\newcommand{\expdate}{2026 年 4 月}
+\newcommand{\reportdate}{\number\year 年 \number\month 月 \number\day 日}
+\newcommand{\exproom}{A主404}
+\newcommand{\stugrade}{优秀/良好/中等}
+\newcommand{\teacher}{钟将}
+
+\setlist[itemize]{label=$\circ$}
+
+\input{sections/0_score_info.tex}
+
+\newpage
+
+\input{sections/1_experiment_content.tex}
+
+\input{sections/2_experiment_design.tex}
+
+\input{sections/3_experiment_note.tex}
+
+\input{sections/4_experiment_result.tex}
+
+\input{sections/5_code_appendix.tex}
+
+\end{document}

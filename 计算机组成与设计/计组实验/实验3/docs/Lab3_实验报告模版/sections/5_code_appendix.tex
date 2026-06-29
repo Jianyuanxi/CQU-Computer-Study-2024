@@ -1,0 +1,92 @@
+\appendix
+\section{Datapath代码}
+\begin{lstlisting}[language=Verilog]
+`timescale 1ns / 1ps
+// Datapath -- 单周期MIPS CPU数据通路
+module datapath(
+    input         clka,
+    input         rst,
+    input         jump,
+    input         branch,
+    input         alusrc,
+    input         memtoreg,
+    input         regwrite,
+    input         regdst,
+    input  [2:0]  alucontrol,
+    output [31:0] pc,
+    input  [31:0] instr,
+    output [31:0] aluout,
+    output [31:0] writedata,
+    input  [31:0] readdata,
+    output [31:0] display_data  // $s0(reg[16])供数码管显示
+);
+    wire [31:0] pc_next, pc_plus4, pc_branch, pc_jump_target;
+    wire        pcsrc;
+    reg  [31:0] pc_reg;
+    assign pc = pc_reg;
+
+    always @(posedge clka) begin
+        if (rst) pc_reg <= 32'h0000_0000;
+        else     pc_reg <= pc_next;
+    end
+
+    adder u_pc_adder(.a(pc_reg), .b(32'd4), .y(pc_plus4));
+
+    wire [4:0]  writereg;
+    wire [31:0] result, rd1, rd2;
+
+    regfile u_regfile(
+        .clk(clka), .we3(regwrite),
+        .ra1(instr[25:21]), .ra2(instr[20:16]),
+        .wa3(writereg), .wd3(result),
+        .rd1(rd1), .rd2(rd2),
+        .s0_out(display_data)
+    );
+
+    mux2 #(5) u_regdst_mux(
+        .d0(instr[20:16]), .d1(instr[15:11]),
+        .sel(regdst), .y(writereg)
+    );
+    mux2 u_memtoreg_mux(
+        .d0(aluout), .d1(readdata),
+        .sel(memtoreg), .y(result)
+    );
+
+    wire [31:0] srca, srcb, signimm, signimm_sl2;
+    wire        zero;
+
+    assign srca = rd1;
+    assign writedata = rd2;
+
+    signext u_signext(.a(instr[15:0]), .y(signimm));
+    mux2 u_alusrc_mux(
+        .d0(rd2), .d1(signimm),
+        .sel(alusrc), .y(srcb)
+    );
+    alu u_alu(
+        .a(srca), .b(srcb),
+        .alucontrol(alucontrol),
+        .result(aluout), .zero(zero)
+    );
+
+    sl2 u_sl2(.a(signimm), .y(signimm_sl2));
+    adder u_branch_adder(
+        .a(pc_plus4), .b(signimm_sl2), .y(pc_branch)
+    );
+
+    assign pcsrc = branch & zero;
+
+    wire [31:0] pc_nobranch_mux_out;
+    mux2 u_branch_mux(
+        .d0(pc_plus4), .d1(pc_branch),
+        .sel(pcsrc), .y(pc_nobranch_mux_out)
+    );
+
+    assign pc_jump_target = {pc_plus4[31:28], instr[25:0], 2'b00};
+    mux2 u_jump_mux(
+        .d0(pc_nobranch_mux_out), .d1(pc_jump_target),
+        .sel(jump), .y(pc_next)
+    );
+
+endmodule
+\end{lstlisting}

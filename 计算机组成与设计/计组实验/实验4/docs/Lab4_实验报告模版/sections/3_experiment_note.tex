@@ -1,0 +1,69 @@
+\section{实验过程记录}
+
+\subsection{基本流水线搭建}
+
+按照《计算机组成与设计》（Patterson \& Hennessy）教材中流水线MIPS的标准结构，在实验三单周期CPU基础上进行流水化改造。具体步骤为：
+
+\begin{enumerate}[(1)]
+    \item 将单周期PC寄存器替换为flopenr，使能信号en连接到\texttt{$\sim$stallF}；
+    \item 在IF与ID阶段之间插入flopenrc，分别存放instrD和pcplus4D；
+    \item 在ID与EX阶段之间插入floprc \#(5)和floprc \#(32)系列寄存器，存放rsE/rtE/rdE/rd1E/rd2E/signimmE/pcplus4E等7个信号；
+    \item 在EX与MEM、MEM与WB之间插入flopr，存放aluout、writedata、writereg、readdata等；
+    \item Controller中相应增加三组ID→EX、EX→MEM、MEM→WB流水线寄存器，使各阶段拿到正确的控制信号。
+\end{enumerate}
+
+\subsection{冒险处理设计选型}
+
+\subsubsection{问题1：beq判断阶段的取舍}
+
+指导书推荐将beq判断提前到ID阶段以减少控制冒险气泡。在前期尝试中按照该方案实现后，遇到以下问题：
+
+\begin{itemize}
+    \item ID级前推（forwardAD/BD）的检测条件复杂，容易与EX级前推产生时序冲突；
+    \item branchstall与lwstall组合使用时，二者均拉高stallF/stallD/flushE组合，下一周期分支判断条件依然成立，触发新一轮stall，形成无限循环死锁；
+    \item 试图通过修改flopenrc的优先级（让en优先于clear）来规避死锁，又导致IF/ID永远stall住，PC永不更新。
+\end{itemize}
+
+经过权衡，本设计最终采取\textbf{beq判断置于EX阶段}的方案。代价是beq成立时需冲刷2条流水线指令（IF与ID阶段），但hazard模块逻辑大幅简化，无forwardAD/BD和branchstall，流水线状态机非常清晰，无任何死锁风险。
+
+\subsubsection{问题2：flushE信号的完整性}
+
+beq判断置于EX后，仅靠flushD冲刷IF/ID并不足够。考察以下时序：
+
+\begin{itemize}
+    \item 设T时刻beq在EX阶段判出zeroE=1，pcsrcE=1；
+    \item T时刻IF/ID寄存器中存放着beq的后一条指令（如sw）；flushD=1将其冲为NOP；
+    \item 但T时刻ID/EX寄存器中已经存放着T-1时刻IF/ID输出的内容——即T-1时刻IF阶段取出的指令（恰恰是sw的前一条），目前正在被ID使用——错！应该是\textbf{T-1时刻IF/ID的内容（sw的前一条）已在T-1上升沿被采样进ID/EX，T时刻ID/EX输出的就是它}。
+\end{itemize}
+
+更精确的trace表明：beq在EX判出pcsrcE=1时，当前ID阶段处理的是beq的下一条指令，下一周期它将进入ID/EX并被EX执行。若不在该时刻冲刷ID/EX，错执行的指令（如sw写入错误地址）会污染数据存储器。
+
+\textbf{解决方案}：在mips.v顶层合成完整的flushE：
+\begin{verbatim}
+assign flushE_total = flushE_hazard | flushD;
+\end{verbatim}
+将该合成信号同时送给controller和datapath的ID/EX寄存器作为clear信号。该修改是本次重写代码的核心修复点。
+
+\subsection{累加程序设计}
+
+\subsubsection{程序逻辑}
+
+最初设计的循环条件为\texttt{slt \$4, \$2, \$3; beq \$4, \$0, end}，即``i$<$100时继续''。但这种写法循环体跑99次（i=1,2,\ldots,99），最终i=100时不再循环，sum=4950而非5050。
+
+修改为\texttt{slt \$4, \$3, \$2; beq \$4, \$0, loop}，即``100$<$i时退出''——i从1递增到101时退出，循环体跑100次，sum=5050。
+
+\subsubsection{机器码验证}
+
+通过手工编码（按照《MIPS基准指令集手册》查表）和Python脚本双重核对，9条指令的机器码全部正确（具体见实验设计章节表\ref{tab:asm}）。
+
+\subsection{仿真验证}
+
+将代码全部重写完成后，使用行为级RAM运行仿真。设置仿真时间为15000ns（充分覆盖100次循环+流水线启动延迟），仿真在12100ns时触发\texttt{\$stop}：
+
+\begin{itemize}
+    \item testbench检测到memwrite=1，dataadr=0，writedata=5050（0x000013BA）；
+    \item Tcl Console打印\textbf{``Simulation succeeded sum(1+2+\ldots+100) = 5050 (0x000013ba)''}；
+    \item 波形中观察display\_data信号（数据存储器[0]的实时值），可见其在最后一次sw时刻从0跳变为5050，符合预期。
+\end{itemize}
+
+整个100次循环+1次sw仅耗时605个时钟周期（12100ns，周期20ns），相比理论最低值（605=3条初始化addi+100×6拍循环+流水线启动），完全吻合，无多余气泡或冗余开销。

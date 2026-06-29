@@ -1,0 +1,178 @@
+\appendix
+
+\section{核心模块代码}
+
+由于代码量较大，本附录只列出最能反映流水线设计核心思想的几个模块：mips.v（顶层连接与flushE合成）、datapath.v（数据通路）、hazard.v（冒险处理）。其余基础模块（alu、mux、触发器等）与实验三类似，限于篇幅不再赘述。
+
+\subsection{mips.v（顶层连接）}
+
+\begin{lstlisting}[language=Verilog,basicstyle=\ttfamily\footnotesize,breaklines=true]
+module mips(
+    input  wire        clk, rst,
+    input  wire [31:0] instr,
+    output wire [31:0] pc,
+    input  wire [31:0] readdata,
+    output wire        memwrite,
+    output wire [31:0] aluout,
+    output wire [31:0] writedata
+);
+    wire [5:0]  opD, functD;
+    wire        jumpD, branchE;
+    wire        regdstE, alusrcE;
+    wire [2:0]  alucontrolE;
+    wire        memwriteM, memtoregM, regwriteM;
+    wire        memtoregW, regwriteW, memtoregE;
+    wire [4:0]  rsD, rtD, rsE, rtE;
+    wire [4:0]  writeregE, writeregM, writeregW;
+    wire [1:0]  forwardAE, forwardBE;
+    wire        stallF, stallD;
+    wire        flushE_hazard, flushD, flushE_total;
+
+    // 关键合成：beq/j成立时，ID/EX 必须清零
+    assign flushE_total = flushE_hazard | flushD;
+
+    controller u_ctrl(.clk(clk), .rst(rst), .opD(opD), .functD(functD),
+        .flushE(flushE_total), .jumpD(jumpD), .branchE(branchE),
+        .regdstE(regdstE), .alusrcE(alusrcE), .alucontrolE(alucontrolE),
+        .memtoregE(memtoregE), .memwriteM(memwriteM), .memtoregM(memtoregM),
+        .regwriteM(regwriteM), .memtoregW(memtoregW), .regwriteW(regwriteW));
+
+    datapath u_dp(.clk(clk), .rst(rst), .instrF(instr), .readdataM(readdata),
+        .jumpD(jumpD), .branchE(branchE), .regdstE(regdstE), .alusrcE(alusrcE),
+        .alucontrolE(alucontrolE), .memtoregW(memtoregW), .regwriteW(regwriteW),
+        .forwardAE(forwardAE), .forwardBE(forwardBE),
+        .stallF(stallF), .stallD(stallD), .flushE(flushE_total),
+        .opD(opD), .functD(functD), .rsD(rsD), .rtD(rtD),
+        .rsE(rsE), .rtE(rtE), .writeregE(writeregE),
+        .writeregM(writeregM), .writeregW(writeregW),
+        .pcF(pc), .aluoutM(aluout), .writedataM(writedata),
+        .flushD_out(flushD));
+
+    hazard u_hz(.rsD(rsD), .rtD(rtD), .rsE(rsE), .rtE(rtE),
+        .writeregE(writeregE), .memtoregE(memtoregE),
+        .writeregM(writeregM), .regwriteM(regwriteM),
+        .writeregW(writeregW), .regwriteW(regwriteW),
+        .forwardAE(forwardAE), .forwardBE(forwardBE),
+        .stallF(stallF), .stallD(stallD), .flushE(flushE_hazard));
+
+    assign memwrite = memwriteM;
+endmodule
+\end{lstlisting}
+
+\subsection{hazard.v（冒险处理）}
+
+\begin{lstlisting}[language=Verilog,basicstyle=\ttfamily\footnotesize,breaklines=true]
+module hazard(
+    input  wire [4:0] rsD, rtD, rsE, rtE,
+    input  wire [4:0] writeregE, writeregM, writeregW,
+    input  wire       memtoregE, regwriteM, regwriteW,
+    output wire [1:0] forwardAE, forwardBE,
+    output wire       stallF, stallD, flushE
+);
+    // EX 前推 A 路：MEM 优先于 WB
+    assign forwardAE =
+        ((rsE != 5'b0) && (rsE == writeregM) && regwriteM) ? 2'b10 :
+        ((rsE != 5'b0) && (rsE == writeregW) && regwriteW) ? 2'b01 : 2'b00;
+    // EX 前推 B 路
+    assign forwardBE =
+        ((rtE != 5'b0) && (rtE == writeregM) && regwriteM) ? 2'b10 :
+        ((rtE != 5'b0) && (rtE == writeregW) && regwriteW) ? 2'b01 : 2'b00;
+    // Load-use 暂停
+    wire lwstall;
+    assign lwstall = memtoregE && ((rsD==rtE)||(rtD==rtE)) && (rtE!=5'b0);
+    assign stallF = lwstall;
+    assign stallD = lwstall;
+    assign flushE = lwstall;
+endmodule
+\end{lstlisting}
+
+\subsection{datapath.v 关键片段}
+
+\begin{lstlisting}[language=Verilog,basicstyle=\ttfamily\footnotesize,breaklines=true]
+// IF 阶段：PC 与 PC+4
+flopenr #(32) u_pcreg(.clk(clk), .rst(rst), .en(~stallF),
+    .d(pcnextF), .q(pcF));
+adder u_pcplus4(.a(pcF), .b(32'd4), .y(pcplus4F));
+mux2 #(32) u_branch_mux(.d0(pcplus4F), .d1(pcbranchE),
+    .sel(pcsrcE), .y(pc_seq_or_branch));
+mux2 #(32) u_jump_mux(.d0(pc_seq_or_branch), .d1(pcjumpD),
+    .sel(jumpD), .y(pcnextF));
+
+// IF/ID 寄存器：flushD 由分支或跳转触发
+assign flushD = pcsrcE | jumpD;
+assign flushD_out = flushD;
+flopenrc #(32) u_ifid_instr(.clk(clk), .rst(rst),
+    .en(~stallD), .clear(flushD), .d(instrF), .q(instrD));
+
+// ID/EX 寄存器：clear = flushE（顶层合成的flushE_total）
+floprc #(32) u_idex_rd1(.clk(clk), .rst(rst), .clear(flushE),
+    .d(rd1D), .q(rd1E));
+// ... 其他ID/EX寄存器类似
+
+// EX 阶段：三路前推与ALU
+mux3 #(32) u_fwdA(.d0(rd1E), .d1(resultW), .d2(aluoutM),
+    .sel(forwardAE), .y(srcaE));
+mux3 #(32) u_fwdB(.d0(rd2E), .d1(resultW), .d2(aluoutM),
+    .sel(forwardBE), .y(srcb2E));
+mux2 #(32) u_alusrc(.d0(srcb2E), .d1(signimmE),
+    .sel(alusrcE), .y(srcbE));
+alu u_alu(.a(srcaE), .b(srcbE), .alucontrol(alucontrolE),
+    .result(aluoutE), .zero(zeroE));
+
+// beq 判断在 EX
+assign pcsrcE = branchE & zeroE;
+
+// sw 写入数据使用前推后的 srcb2E
+flopr #(32) u_exmem_wd(.clk(clk), .rst(rst),
+    .d(srcb2E), .q(writedataM));
+\end{lstlisting}
+
+\section{累加测试程序（汇编与机器码）}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+# 地址  机器码      汇编                  注释
+0x00:  20010000   addi $1, $0, 0       # sum = 0
+0x04:  20020001   addi $2, $0, 1       # i = 1
+0x08:  20030064   addi $3, $0, 100     # limit = 100
+0x0C:  00220820   add  $1, $1, $2      # sum += i  <- loop:
+0x10:  20420001   addi $2, $2, 1       # i++
+0x14:  0062202a   slt  $4, $3, $2      # $4 = (100 < i)
+0x18:  1080fffc   beq  $4, $0, loop    # if (i <= 100) goto loop
+0x1C:  ac010000   sw   $1, 0($0)       # mem[0] = sum (5050)
+0x20:  08000008   j    8                # end: 死循环
+\end{lstlisting}
+
+\section{Testbench 代码}
+
+\begin{lstlisting}[language=Verilog,basicstyle=\ttfamily\footnotesize,breaklines=true]
+`timescale 1ns / 1ps
+module testbench();
+    reg clk, rst;
+    wire [31:0] writedata, dataadr, display_data;
+    wire memwrite;
+
+    top dut(.clk(clk), .rst(rst), .writedata(writedata),
+        .dataadr(dataadr), .memwrite(memwrite),
+        .display_data(display_data));
+
+    initial begin rst = 1; #22; rst = 0; end
+    initial begin clk = 0; forever #10 clk = ~clk; end
+
+    always @(negedge clk) begin
+        if (memwrite) begin
+            if (dataadr === 32'd0 && writedata === 32'd5050) begin
+                $display("================================================");
+                $display(" Simulation succeeded ");
+                $display(" sum(1+2+...+100) = %0d (0x%h)",
+                         writedata, writedata);
+                $display("================================================");
+                $stop;
+            end else begin
+                $display(" Simulation FAILED ");
+                $display(" dataadr=%0d writedata=%0d", dataadr, writedata);
+                $stop;
+            end
+        end
+    end
+endmodule
+\end{lstlisting}

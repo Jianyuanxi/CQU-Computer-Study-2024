@@ -1,0 +1,83 @@
+\section{实验过程记录}
+
+\subsection{环境配置}
+
+打开发布包 \texttt{cache\_lab\_v0.06} 中的工程文件（\texttt{run\_vivado/mycpu\_prj1/mycpu.xpr}），Vivado提示工程需要升级IP核。在TCL Console执行：
+
+\begin{verbatim}
+upgrade_ip [get_ips *]
+generate_target all [get_ips *]
+\end{verbatim}
+
+\subsection{问题1：中文路径导致IP生成失败（乱码错误）}
+
+\textbf{问题描述：}工程位于含中文字符的路径下，Vivado 2025.1在生成IP输出文件时，路径中的中文字符被乱码处理，导致文件找不到，IP生成全部失败，错误信息如下：
+
+\begin{verbatim}
+File not found: d:/16228/desktop/璁＄粍.../clk_pll.veo
+ERROR: [IP_Flow 19-3505] Failed to generate IP 'clk_pll'
+\end{verbatim}
+
+\textbf{解决方案：}将整个发布包复制到纯英文无空格的短路径下：
+
+\begin{verbatim}
+file copy -force {D:/...cache_lab_v0.06} {C:/cachelab}
+\end{verbatim}
+
+重新打开 \texttt{C:/cachelab/} 下的工程，IP生成全部正常。
+
+\subsection{问题2：FSM死锁（状态机无法退出RM/WM）}
+
+\textbf{问题描述：}初版代码中，RM/WM状态的退出条件依赖实时的\texttt{cpu\_data\_req}信号：
+
+\begin{verbatim}
+RM: state <= (read & cache_data_data_ok) ? IDLE : RM;
+\end{verbatim}
+
+CPU在收到\texttt{addr\_ok}后会撤销\texttt{req}（拉低），此时\texttt{read}信号也随之变为0，导致\texttt{read \& cache\_data\_data\_ok}永远不成立，FSM卡在RM状态无法退出，仿真陷入死循环。
+
+\textbf{解决方案：}进入RM/WM时立即将地址、大小等请求信息锁存到寄存器（\texttt{save\_addr}、\texttt{save\_size}等），退出条件改为只依赖\texttt{state}和AXI握手信号：
+
+\begin{verbatim}
+RM: if (cache_data_data_ok) state <= IDLE;
+WM: if (cache_data_data_ok) state <= IDLE;
+\end{verbatim}
+
+\subsection{问题3：addr\_rcv握手循环依赖}
+
+\textbf{问题描述：}初版\texttt{addr\_rcv}的置位条件包含\texttt{cache\_data\_req}，而\texttt{cache\_data\_req}的赋值又依赖\texttt{\textasciitilde addr\_rcv}，形成组合逻辑环，导致\texttt{addr\_rcv}始终无法正确置位，AXI握手无法完成。
+
+\textbf{解决方案：}将\texttt{addr\_rcv}的清零改为在回到IDLE状态时统一执行，打破循环依赖：
+
+\begin{verbatim}
+always @(posedge clk) begin
+    if (rst)                                  addr_rcv <= 0;
+    else if (state == IDLE)                   addr_rcv <= 0; // 回IDLE清零
+    else if (cache_data_req & cache_data_addr_ok) addr_rcv <= 1;
+end
+\end{verbatim}
+
+\subsection{问题4：写命中时addr\_ok/data\_ok未正确返回}
+
+\textbf{问题描述：}初版代码写命中时直接更新Cache line，但未给CPU返回\texttt{addr\_ok}和\texttt{data\_ok}，导致CPU一直等待确认信号，流水线卡死。
+
+\textbf{解决方案：}将写操作（无论命中或缺失）统一路由到WM状态，等AXI握手完成（\texttt{cache\_data\_data\_ok}拉高）后才向CPU返回\texttt{data\_ok}，保证时序正确。
+
+\subsection{仿真验证}
+
+完成上述修复后，将仿真运行时间设置为无限制（运行到\$finish）：
+
+\begin{verbatim}
+set_property -name {xsim.simulate.runtime} -value {0} \
+  -objects [get_filesets sim_1]
+\end{verbatim}
+
+设置仿真顶层并启动：
+
+\begin{verbatim}
+set_property top tb_top [get_filesets sim_1]
+launch_simulation
+run -all
+\end{verbatim}
+
+仿真运行约4分钟后完成，TCL控制台输出\textbf{\texttt{----PASS!!!}}，err\_count=0，验证通过。

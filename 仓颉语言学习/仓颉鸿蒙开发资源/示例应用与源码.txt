@@ -1,1 +1,0 @@
-更多示例请访问官方示例应用代码仓：https://gitcode.com/Cangjie/HarmonyOS-Examples

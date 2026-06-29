@@ -1,0 +1,10 @@
+\section{实验内容}
+
+阅读实验指导书，实现以下Cache模块：
+
+\begin{enumerate}[(1)]
+    \item \textbf{i\_cache（指令Cache）}：实现直接映射、只读的指令Cache。规格：4KB容量、1024条Cache line、每条Cache line存储1个字（4字节）；Index 10位、Offset 2位、Tag 20位。读命中时零延迟返回数据；读缺失时通过类SRAM接口向AXI内存发起读请求，填充Cache后返回给CPU。
+    \item \textbf{d\_cache（数据Cache）}：实现直接映射的数据Cache，支持读（lb/lh/lw）和写（sb/sh/sw）。写策略采用Write Through（写直通）+ Non-Write Allocate（非写分配）：写命中时同步更新Cache line并直写内存；写缺失时仅写内存不分配Cache line；读缺失时从内存读入并填充Cache。
+    \item \textbf{cache.v（顶层封装）}：将i\_cache和d\_cache例化并连接，已由发布包提供，无需修改。
+    \item 使用发布包提供的测试程序（矩阵乘法，shell1/matrix\_mult.c）进行行为仿真，通过Trace比对机制（traces/cache\_lab\_trace.txt）验证正确性，最终TCL控制台输出\texttt{----PASS!!!}。
+\end{enumerate}

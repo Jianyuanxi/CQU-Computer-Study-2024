@@ -1,0 +1,61 @@
+\section{实验设计}
+
+\subsection{控制器(Controller)}\label{sub:controller}
+
+\subsubsection{功能描述}
+控制器模块根据32位MIPS指令的操作码字段（\textit{op[5:0]}）和功能码字段（\textit{funct[5:0]}），译码生成数据通路所需的全部控制信号，包括寄存器堆写使能、存储器读写控制、ALU操作选择、多路选择器控制及跳转控制信号。
+
+\subsubsection{接口定义}
+
+\begin{table}[htp]
+\caption{Controller接口定义}\label{tab:ctrl_signal}
+\begin{center}
+    \begin{tabular}{|l|l|l|p{6cm}|}
+    \hline
+    \textbf{信号名} & \textbf{方向} & \textbf{位宽} & \textbf{功能描述}\\ \hline \hline
+    op          & Input  & 6-bit & 指令操作码，来自instr[31:26] \\ \hline
+    funct       & Input  & 6-bit & R型指令功能码，来自instr[5:0] \\ \hline
+    memtoreg    & Output & 1-bit & 回写数据选择：1选存储器数据，0选ALU结果 \\ \hline
+    memwrite    & Output & 1-bit & 数据存储器写使能，1为写 \\ \hline
+    branch      & Output & 1-bit & 分支指令标志，beq时为1 \\ \hline
+    alusrc      & Output & 1-bit & ALU B端输入选择：1选立即数扩展，0选寄存器 \\ \hline
+    regdst      & Output & 1-bit & 写寄存器地址选择：1选rd，0选rt \\ \hline
+    regwrite    & Output & 1-bit & 寄存器堆写使能，1为写 \\ \hline
+    jump        & Output & 1-bit & 跳转指令标志，j指令时为1 \\ \hline
+    alucontrol  & Output & 3-bit & ALU操作控制码 \\ \hline
+    \end{tabular}
+\end{center}
+\end{table}
+
+\subsubsection{逻辑控制}
+控制器由main\_decoder和alu\_decoder两级译码构成。main\_decoder根据\textit{op}字段输出各路控制信号及2位\textit{aluop}；alu\_decoder再根据\textit{aluop}和\textit{funct}字段确定最终的\textit{alucontrol}。主要译码逻辑如表\ref{tab:decode}所示。
+
+\begin{table}[htp]
+\caption{控制信号译码表}\label{tab:decode}
+\begin{center}
+    \begin{tabular}{|l|l|l|l|l|l|l|l|l|}
+    \hline
+    \textbf{指令} & \textbf{op} & \textbf{regwrite} & \textbf{regdst} & \textbf{alusrc} & \textbf{branch} & \textbf{memwrite} & \textbf{memtoreg} & \textbf{aluop} \\ \hline \hline
+    R-type & 000000 & 1 & 1 & 0 & 0 & 0 & 0 & 10 \\ \hline
+    lw     & 100011 & 1 & 0 & 1 & 0 & 0 & 1 & 00 \\ \hline
+    sw     & 101011 & 0 & x & 1 & 0 & 1 & x & 00 \\ \hline
+    beq    & 000100 & 0 & x & 0 & 1 & 0 & x & 01 \\ \hline
+    addi   & 001000 & 1 & 0 & 1 & 0 & 0 & 0 & 00 \\ \hline
+    j      & 000010 & 0 & x & x & x & 0 & x & xx \\ \hline
+    \end{tabular}
+\end{center}
+\end{table}
+
+\subsection{存储器(Block Memory)}\label{sub:ctl}
+
+\subsubsection{类型选择}
+使用Xilinx Block Memory Generator IP，选择Single Port ROM类型，Interface Type为Native，不勾选Generate address interface with 32 bits，使地址线为8位（对应256深度）。
+
+\subsubsection{参数设置}
+\begin{enumerate}
+    \item Port A Width：32位（对应32位MIPS指令宽度）
+    \item Port A Depth：256（地址线8位，pc[9:2]输入）
+    \item Enable Port Type：Use ENA Pin（连接inst\_ce信号）
+    \item 初始化文件：inst\_ram.coe（16进制格式，包含6条测试指令）
+    \item Fill Remaining Memory Locations：勾选，空余地址填0
+\end{enumerate}
