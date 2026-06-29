@@ -1,4 +1,0 @@
-框架地址：https://gitcode.com/Cangjie-TPC/CangjieMagic
-MCP Server 集合示例：https://gitcode.com/Cangjie-TPC/CangjieMagic-MCPServer
-仓颉语料库：https://gitcode.com/Cangjie/CangjieCorpus
-示例代码仓：https://gitcode.com/Cangjie/CangjieMagic-Examples

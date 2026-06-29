@@ -1,0 +1,155 @@
+`timescale 1ns / 1ps
+// Datapath —— 单周期MIPS CPU数据通路
+// 支持指令：add/sub/and/or/slt(R型), addi, lw, sw, beq, j
+//
+// 数据流：
+//   PC → InstMem → 译码 → RegFile/ALU/DataMem → WriteBack → PC
+//
+// 控制信号说明：
+//   regdst  : 1=rd写回(R型), 0=rt写回(lw/addi)
+//   alusrc  : 1=立即数, 0=寄存器rd2
+//   memtoreg: 1=数据存储器→寄存器, 0=ALU结果→寄存器
+//   regwrite: 寄存器堆写使能
+//   branch  : beq分支使能
+//   jump    : j跳转使能
+module datapath(
+    input         clka,
+    input         rst,
+    // 控制信号
+    input         jump,
+    input         branch,
+    input         alusrc,
+    input         memtoreg,
+    input         regwrite,
+    input         regdst,
+    input  [2:0]  alucontrol,
+    // 与外部存储器交互
+    output [31:0] pc,
+    input  [31:0] instr,
+    output [31:0] aluout,
+    output [31:0] writedata,
+    input  [31:0] readdata,
+    output [31:0] display_data  // 输出$s0(reg[16])供数码管显示
+);
+
+    // ---------- PC逻辑 ----------
+    wire [31:0] pc_next, pc_plus4, pc_branch, pc_jump_target;
+    wire        pcsrc;
+
+    // PC寄存器
+    reg [31:0] pc_reg;
+    assign pc = pc_reg;
+
+    always @(posedge clka) begin
+        if (rst)
+            pc_reg <= 32'h0000_0000;
+        else
+            pc_reg <= pc_next;
+    end
+
+    // PC+4
+    adder u_pc_adder(
+        .a(pc_reg),
+        .b(32'd4),
+        .y(pc_plus4)
+    );
+
+    // ---------- 寄存器堆 ----------
+    wire [4:0]  writereg;
+    wire [31:0] result;
+    wire [31:0] rd1, rd2;
+
+    regfile u_regfile(
+        .clk(clka),
+        .we3(regwrite),
+        .ra1(instr[25:21]),
+        .ra2(instr[20:16]),
+        .wa3(writereg),
+        .wd3(result),
+        .rd1(rd1),
+        .rd2(rd2),
+        .s0_out(display_data)
+    );
+
+    // writereg：R型选rd(15:11)，其他选rt(20:16)
+    mux2 #(5) u_regdst_mux(
+        .d0(instr[20:16]),
+        .d1(instr[15:11]),
+        .sel(regdst),
+        .y(writereg)
+    );
+
+    // result：lw选readdata，其他选aluout
+    mux2 u_memtoreg_mux(
+        .d0(aluout),
+        .d1(readdata),
+        .sel(memtoreg),
+        .y(result)
+    );
+
+    // ---------- ALU ----------
+    wire [31:0] srca, srcb, signimm, signimm_sl2;
+    wire        zero;
+
+    assign srca = rd1;
+    assign writedata = rd2;   // sw时，rd2即写入数据存储器的数据
+
+    // 符号扩展
+    signext u_signext(
+        .a(instr[15:0]),
+        .y(signimm)
+    );
+
+    // ALUSrc选择：立即数或寄存器
+    mux2 u_alusrc_mux(
+        .d0(rd2),
+        .d1(signimm),
+        .sel(alusrc),
+        .y(srcb)
+    );
+
+    alu u_alu(
+        .a(srca),
+        .b(srcb),
+        .alucontrol(alucontrol),
+        .result(aluout),
+        .zero(zero)
+    );
+
+    // ---------- Branch地址计算 ----------
+    sl2 u_sl2(
+        .a(signimm),
+        .y(signimm_sl2)
+    );
+
+    adder u_branch_adder(
+        .a(pc_plus4),
+        .b(signimm_sl2),
+        .y(pc_branch)
+    );
+
+    // pcsrc = branch AND zero
+    assign pcsrc = branch & zero;
+
+    // 选择PC+4 或 PCBranch
+    wire [31:0] pc_nobranch_mux_out;
+    mux2 u_branch_mux(
+        .d0(pc_plus4),
+        .d1(pc_branch),
+        .sel(pcsrc),
+        .y(pc_nobranch_mux_out)
+    );
+
+    // ---------- J指令地址计算 ----------
+    // PCJump = {PC+4[31:28], instr[25:0], 2'b00}
+    assign pc_jump_target = {pc_plus4[31:28], instr[25:0], 2'b00};
+
+    // 最终PC选择
+    mux2 u_jump_mux(
+        .d0(pc_nobranch_mux_out),
+        .d1(pc_jump_target),
+        .sel(jump),
+        .y(pc_next)
+    );
+
+endmodule

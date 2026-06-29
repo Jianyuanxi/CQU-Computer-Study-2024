@@ -1,0 +1,17 @@
+\section{实验内容}
+\begin{enumerate}
+    \item \textbf{PC模块}。D触发器结构，用于储存PC（一个周期）。实现2个输入，分别为\textit{clk}（时钟）和\textit{rst}（复位）；实现2个输出，分别为\textit{pc}（当前指令地址）和\textit{inst\_ce}（指令存储器使能），分别连接指令存储器的\textit{addra}和\textit{ena}端口。地址线取\textit{pc[9:2]}共8位，对应ROM深度256。
+
+    \item \textbf{加法器}。用于计算下一条指令地址，实现2个输入、1个输出，输入值分别为当前指令地址\textit{PC}和常数\textit{32'h4}，输出为\textit{pc\_next = PC + 4}。
+
+    \item \textbf{Controller}。包含两个子模块：
+    \begin{enumerate}
+        \item \textbf{main\_decoder}。负责判断指令类型，根据指令高6位\textit{op}生成各路控制信号（\textit{memtoreg, memwrite, branch, alusrc, regdst, regwrite, jump}）及2位\textit{aluop}，传递给alu\_decoder。
+        \item \textbf{alu\_decoder}。负责ALU控制信号译码，输入为\textit{funct[5:0]}和\textit{aluop[1:0]}，输出为3位\textit{alucontrol}。
+        \item \textbf{controller}顶层文件调用上述两个子模块，对外暴露\textit{op[5:0]}、\textit{funct[5:0]}输入和全部控制信号输出。
+    \end{enumerate}
+
+    \item \textbf{指令存储器}。使用Xilinx Block Memory Generator IP（版本8.4）构造单端口ROM，配置如下：Interface Type为Native，Memory Type为Single Port ROM，不勾选Generate address interface with 32 bits；Port A Width为32位，Port A Depth为256；Enable Port Type选择Use ENA Pin；加载初始化文件inst\_ram.coe，勾选Fill Remaining Memory Locations。
+
+    \item \textbf{时钟分频器}。将板载100MHz时钟分频，仿真时使用小计数值（MAX=4）以加速仿真；上板时改为49999999实现1Hz输出，连接PC和指令存储器时钟信号。
+\end{enumerate}

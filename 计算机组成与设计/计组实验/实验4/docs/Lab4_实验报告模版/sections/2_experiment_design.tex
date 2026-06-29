@@ -1,0 +1,184 @@
+\section{实验设计}
+
+\subsection{流水线整体架构}
+
+本实验在实验三单周期MIPS CPU基础上引入五级流水线。各阶段功能分工如下：
+
+\begin{itemize}
+    \item \textbf{IF（取指）}：PC寄存器驱动指令存储器读取当前指令，同时计算pc+4；
+    \item \textbf{ID（译码）}：解码指令字段，读取寄存器堆，对立即数做符号扩展；
+    \item \textbf{EX（执行）}：执行ALU运算；通过三路前推MUX选择操作数；本设计将beq相等判断也放在EX阶段，用ALU输出的zero信号驱动分支选通信号pcsrcE；
+    \item \textbf{MEM（访存）}：对数据存储器进行读写；
+    \item \textbf{WB（写回）}：将ALU结果或内存读出值经mux2选择后写回寄存器堆。
+\end{itemize}
+
+各级间寄存器的类型选择策略如下：
+
+\begin{table}[htp]
+\caption{各流水线寄存器类型及控制信号}\label{tab:pipereg}
+\centering
+\begin{tabular}{|l|l|p{7.5cm}|}
+\hline
+\textbf{位置} & \textbf{类型} & \textbf{控制信号} \\ \hline\hline
+PC寄存器       & flopenr  & en = \texttt{$\sim$stallF}（lwstall时PC保持不变） \\ \hline
+IF/ID寄存器    & flopenrc & en = \texttt{$\sim$stallD}（lwstall时保持）；\newline clear = \texttt{flushD}（分支/跳转成立时冲刷） \\ \hline
+ID/EX寄存器    & floprc   & clear = \texttt{flushE\_total}（lwstall或分支冲刷时插入气泡） \\ \hline
+EX/MEM寄存器   & flopr    & 无 \\ \hline
+MEM/WB寄存器   & flopr    & 无 \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{关键设计决策：beq判断置于EX阶段}
+
+指导书建议的``beq提前到ID级''方案虽可减少控制冒险气泡数（2个减为1个），但需要额外引入ID级前推（forwardAD/BD）与branchstall暂停逻辑，二者与lwstall的交互极易产生流水线死锁。考虑到本课程汇编程序规模较小，性能差异可忽略，本设计采用更稳健的\textbf{beq在EX阶段判断}方案，理由如下：
+
+\begin{enumerate}[(1)]
+    \item ALU本身已对rs和rt做减法，zero信号可直接复用作为相等判别；
+    \item EX阶段的前推机制（forwardAE/BE）已经覆盖了beq所需的全部数据来源情况，无需额外的ID级前推；
+    \item 不存在branchstall，hazard模块只需处理lwstall一种暂停场景，逻辑大幅简化；
+    \item 控制冒险通过\texttt{flushD = pcsrcE | jumpD}直接冲刷IF/ID寄存器解决；同时由顶层mips.v合成\texttt{flushE\_total = flushE\_hazard | flushD}回送给ID/EX寄存器，避免错执行的指令进入EX阶段。
+\end{enumerate}
+
+\subsection{冒险处理模块（hazard.v）}
+
+\subsubsection{功能描述}
+
+检测流水线中的数据冒险并生成相应的前推选择信号和暂停信号。本设计中hazard模块只需处理两类冒险：（i）EX阶段的数据冒险（通过MEM→EX、WB→EX前推解决），（ii）load-use数据冒险（通过插入1个气泡解决）。控制冒险由datapath内部直接处理，不再由hazard模块管理。
+
+\subsubsection{接口定义}
+
+\begin{table}[htp]
+\caption{hazard模块接口}\label{tab:hazard}
+\centering
+\begin{tabular}{|l|l|l|p{6.5cm}|}
+\hline
+\textbf{信号名} & \textbf{方向} & \textbf{位宽} & \textbf{功能描述} \\ \hline\hline
+rsD, rtD          & In  & 5 & ID阶段源寄存器地址（lwstall检测用） \\ \hline
+rsE, rtE          & In  & 5 & EX阶段源寄存器地址（前推检测用） \\ \hline
+writeregE/M/W     & In  & 5 & EX/MEM/WB阶段写目标地址 \\ \hline
+regwriteM/W       & In  & 1 & MEM/WB阶段寄存器写使能 \\ \hline
+memtoregE         & In  & 1 & EX阶段为lw指令的标志 \\ \hline
+forwardAE/BE      & Out & 2 & EX阶段A/B操作数前推选择 \\ \hline
+stallF, stallD    & Out & 1 & PC与IF/ID保持 \\ \hline
+flushE            & Out & 1 & ID/EX清零（与flushD一同在mips.v中合成） \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{逻辑实现}
+
+\textbf{EX阶段前推（forwardAE/BE）}：
+
+\begin{itemize}
+    \item 若EX源寄存器与MEM写目标相同且MEM写使能：选MEM的ALU结果（2'b10）；
+    \item 否则若EX源寄存器与WB写目标相同且WB写使能：选WB写回数据（2'b01）；
+    \item 否则：使用寄存器堆原始读出值（2'b00）。
+\end{itemize}
+
+注意：前推条件中要求writereg≠0且regwrite=1，避免与零号寄存器误匹配，以及避免与不写寄存器的指令误匹配。
+
+\textbf{Load-Use暂停（lwstall）}：当EX阶段是lw指令（memtoregE=1）且ID阶段下一条指令的rs或rt等于lw的目标寄存器时：
+
+\begin{verbatim}
+lwstall = memtoregE && ((rsD==rtE) || (rtD==rtE)) && (rtE!=0)
+stallF = stallD = flushE = lwstall
+\end{verbatim}
+
+效果：PC与IF/ID寄存器保持不变，ID/EX寄存器清零（插入NOP气泡）。lw完成MEM阶段后即可向后续EX阶段前推数据，故只需1个气泡。
+
+\subsection{数据通路（datapath.v）}
+
+\subsubsection{功能描述}
+
+实现完整的五级流水线数据路径：PC更新选择、各级流水线寄存器、三路前推MUX、ALU运算、分支/跳转地址计算与判断、寄存器堆读写。
+
+\subsubsection{接口定义}
+
+\begin{table}[htp]
+\caption{datapath模块关键接口}\label{tab:dp}
+\centering
+\begin{tabular}{|l|l|l|p{5.5cm}|}
+\hline
+\textbf{信号名} & \textbf{方向} & \textbf{位宽} & \textbf{功能描述} \\ \hline\hline
+clk, rst            & In  & 1  & 时钟与异步复位 \\ \hline
+instrF              & In  & 32 & IF阶段：来自inst\_ram的指令 \\ \hline
+readdataM           & In  & 32 & MEM阶段：data\_ram读出数据 \\ \hline
+jumpD, branchE      & In  & 1  & 跳转/分支控制（来自controller） \\ \hline
+regdstE, alusrcE    & In  & 1  & EX阶段控制 \\ \hline
+alucontrolE         & In  & 3  & ALU操作码 \\ \hline
+memtoregW, regwriteW & In & 1  & WB阶段控制 \\ \hline
+forwardAE, forwardBE & In & 2  & EX阶段前推选择（来自hazard）\\ \hline
+stallF, stallD, flushE & In & 1 & 流水线控制信号 \\ \hline
+opD, functD         & Out & 6  & 指令字段（送controller） \\ \hline
+rsE/D, rtE/D, writereg* & Out & 5 & 送hazard用 \\ \hline
+flushD\_out         & Out & 1  & 分支/跳转冲刷信号（送mips.v合成）\\ \hline
+pcF, aluoutM, writedataM & Out & 32 & 与外部存储器接口 \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{关键设计要点}
+
+\begin{enumerate}[(1)]
+    \item \textbf{PC更新逻辑}：pcnextF依次经过branch MUX（pcsrcE控制）和jump MUX（jumpD控制），实现顺序、beq跳转、j跳转三种PC来源；
+    \item \textbf{beq在EX判断}：\texttt{pcsrcE = branchE \& zeroE}，zeroE由ALU产生；
+    \item \textbf{flushD生成}：\texttt{flushD = pcsrcE | jumpD}，在datapath内部完成，并向上输出至mips.v；
+    \item \textbf{三路前推MUX}：EX阶段srcaE和srcb2E各由一个mux3控制，sel=2'b10选MEM前推（aluoutM），sel=2'b01选WB前推（resultW），sel=2'b00选寄存器堆原始值；
+    \item \textbf{sw数据正确性}：EX/MEM寄存器写入的writedataM为srcb2E（前推后的rt值），而非srcbE（立即数选择后的值），保证sw写入的是正确的rt寄存器值；
+    \item \textbf{寄存器堆下降沿写}：在时钟下降沿写入，下一条指令ID阶段（上升沿）即可读到新值，天然解决WB→ID的读后写一致性问题。
+\end{enumerate}
+
+\subsection{控制器（controller.v）}
+
+\subsubsection{功能描述}
+
+在ID阶段译码生成所有控制信号，通过三组流水线寄存器分别传递到EX、MEM、WB阶段。main decoder和alu decoder与实验三完全相同。
+
+\subsubsection{控制信号传递路径}
+
+控制信号在ID阶段产生后，按其使用阶段逐级流水：
+
+\begin{itemize}
+    \item \textbf{ID→EX（floprc \#(9)，clear=flushE\_total）}：将regwrite、memtoreg、memwrite、branch、alusrc、regdst、alucontrol[2:0]共9位控制信号打包传递；
+    \item \textbf{EX→MEM（flopr \#(3)）}：regwriteM、memtoregM、memwriteM；
+    \item \textbf{MEM→WB（flopr \#(2)）}：regwriteW、memtoregW。
+\end{itemize}
+
+其中jumpD直接在ID阶段使用（控制PC选择），branchE被传到EX阶段（与zeroE合成pcsrcE），memtoregE作为hazard模块的输入用于lwstall检测。
+
+\subsection{顶层模块连接（mips.v）}
+
+mips.v作为CPU内核顶层，连接controller、datapath、hazard三大模块。其中最关键的设计在于flushE信号的合成：
+
+\begin{verbatim}
+assign flushE_total = flushE_hazard | flushD;
+\end{verbatim}
+
+其中flushE\_hazard来自hazard（仅在lwstall时拉高），flushD来自datapath（pcsrcE或jumpD成立时拉高）。该合成信号同时送给controller和datapath的ID/EX寄存器，确保：
+
+\begin{itemize}
+    \item lwstall触发时，ID/EX插入NOP气泡，等待lw完成MEM读取；
+    \item beq或j成立时，IF/ID和ID/EX寄存器同时清零（IF/ID由flushD清零，ID/EX由flushE\_total清零），防止延迟槽中的错执行指令进入EX阶段并产生副作用。
+\end{itemize}
+
+\subsection{累加测试程序设计}
+
+为验证流水线CPU的正确性并满足验收要求``实现1+2+\ldots+100''，编写如下9条指令的汇编程序：
+
+\begin{table}[htp]
+\caption{累加程序汇编与机器码}\label{tab:asm}
+\centering
+\begin{tabular}{|c|l|l|p{4.5cm}|}
+\hline
+\textbf{地址} & \textbf{汇编} & \textbf{机器码} & \textbf{功能} \\ \hline\hline
+0x00 & \texttt{addi \$1, \$0, 0}    & 20010000 & sum = 0 \\ \hline
+0x04 & \texttt{addi \$2, \$0, 1}    & 20020001 & i = 1 \\ \hline
+0x08 & \texttt{addi \$3, \$0, 100}  & 20030064 & limit = 100 \\ \hline
+0x0C & \texttt{add  \$1, \$1, \$2}  & 00220820 & sum += i (循环开始) \\ \hline
+0x10 & \texttt{addi \$2, \$2, 1}    & 20420001 & i++ \\ \hline
+0x14 & \texttt{slt  \$4, \$3, \$2}  & 0062202a & \$4 = (100 < i) \\ \hline
+0x18 & \texttt{beq  \$4, \$0, loop} & 1080fffc & if(i$\leq$100) 跳回 0x0C \\ \hline
+0x1C & \texttt{sw   \$1, 0(\$0)}    & ac010000 & mem[0] = 5050 \\ \hline
+0x20 & \texttt{j 8}                  & 08000008 & 死循环（PC=0x20对应字地址8） \\ \hline
+\end{tabular}
+\end{table}
+
+程序使用addi、add、slt、beq、sw、j六种指令，涵盖了R型算术、I型立即数、条件分支、无条件跳转、存储器写入等典型指令类型。循环执行100次，sw $1$, 0($0$)将累加结果5050（0x13BA）写入数据存储器地址0。

@@ -1,0 +1,70 @@
+\section{实验设计}
+
+\subsection{ALU}\label{sub:alu}
+
+\subsubsection{功能描述}
+ALU（算术逻辑单元）接收两个32位操作数 num1、num2 及3位控制码 op，根据 op 的值执行对应的算术或逻辑运算，输出32位结果 result 及1位零标志 zero。支持无符号加法、减法、按位与、按位或、按位取反及有符号比较（SLT）共6种操作。
+
+\subsubsection{接口定义}
+
+\begin{table}[htp]
+\caption{ALU接口定义}\label{tab:signaldef}
+\begin{center}
+	\begin{tabular}{|l|l|l|p{6cm}|}
+	\hline
+	\textbf{信号名} & \textbf{方向} & \textbf{位宽} & \textbf{功能描述}\\ \hline \hline
+	num1   & Input  & 32-bit & 操作数A \\ \hline
+	num2   & Input  & 32-bit & 操作数B \\ \hline
+	op     & Input  & 3-bit  & 运算控制码，决定执行哪种运算 \\ \hline
+	result & Output & 32-bit & 运算结果输出 \\ \hline
+	zero   & Output & 1-bit  & 零标志，result为全0时置1 \\ \hline
+	\end{tabular}
+\end{center}
+\end{table}
+
+\subsubsection{逻辑控制}
+ALU 采用纯组合逻辑实现，使用 \texttt{assign} 语句配合三目运算符按优先级依次判断 op 的值，选择对应运算输出至 result。SLT 操作使用 \texttt{\$signed()} 进行有符号比较，当 num1 < num2 时输出1，否则输出0。零标志 zero 由 result 是否等于0直接驱动。
+
+\begin{table}[htp]
+\caption{ALU运算控制码及功能}\label{tab:aluop}
+\begin{center}
+	\begin{tabular}{|c|l|}
+	\hline
+	\textbf{op (F[2:0])} & \textbf{功能} \\ \hline \hline
+	000 & A + B（无符号加法）\\ \hline
+	001 & A - B（减法）\\ \hline
+	010 & A AND B（按位与）\\ \hline
+	011 & A OR B（按位或）\\ \hline
+	100 & NOT A（按位取反）\\ \hline
+	101 & SLT：A < B 则输出1，否则输出0 \\ \hline
+	\end{tabular}
+\end{center}
+\end{table}
+
+\subsection{有阻塞4级32bit全加器}\label{sub:ctl}
+
+\subsubsection{功能描述}
+实现一个4级流水线32位全加器，每级负责8位加法运算，将32位加法分为4个流水级依次完成。模块支持每级独立的暂停（stop）和刷新（reset）控制，可模拟流水线阻塞与清空场景。
+
+\subsubsection{接口定义}
+
+\begin{table}[htp]
+\caption{流水线全加器接口定义}\label{tab:pipelinedef}
+\begin{center}
+	\begin{tabular}{|l|l|l|p{6cm}|}
+	\hline
+	\textbf{信号名} & \textbf{方向} & \textbf{位宽} & \textbf{功能描述}\\ \hline \hline
+	clk      & Input  & 1-bit  & 时钟信号 \\ \hline
+	c\_in    & Input  & 1-bit  & 最低位进位输入 \\ \hline
+	cin\_a   & Input  & 32-bit & 加数A \\ \hline
+	cin\_b   & Input  & 32-bit & 加数B \\ \hline
+	stop     & Input  & 4-bit  & 各级流水线暂停控制，stop[i]=1时第i+1级保持当前值 \\ \hline
+	reset    & Input  & 4-bit  & 各级流水线刷新控制，reset[i]=1时第i+1级清零 \\ \hline
+	c\_out   & Output & 1-bit  & 最高位进位输出 \\ \hline
+	sum\_out & Output & 32-bit & 32位加法结果输出 \\ \hline
+	\end{tabular}
+\end{center}
+\end{table}
+
+\subsubsection{逻辑控制}
+每级流水线在时钟上升沿触发，优先判断 reset 信号（高电平时将本级寄存器清零），其次判断 stop 信号（高电平时本级寄存器保持当前值不更新），否则正常执行本级8位加法并将结果锁存至寄存器传递至下一级。4级级联完成完整32位加法，各级中间结果分别保存在 sum\_out\_t1（8位）、sum\_out\_t2（16位）、sum\_out\_t3（24位）寄存器中，最终结果由第4级输出至 sum\_out。

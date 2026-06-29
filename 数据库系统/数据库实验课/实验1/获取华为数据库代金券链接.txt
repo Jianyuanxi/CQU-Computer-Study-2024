@@ -1,0 +1,2 @@
+1. 加入数据库实验，领取代金券：https://edu.hicomputing.huawei.com/teaching/voucher-details/invite/20241129qpjnZLG7
+2. 每天实验结束后，一定要在ECS云服务器控制台上关机，否则将继续计费。

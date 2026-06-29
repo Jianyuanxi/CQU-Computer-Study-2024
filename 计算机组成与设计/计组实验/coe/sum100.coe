@@ -1,0 +1,29 @@
+; =============================================================
+; sum100.coe -- Instruction ROM for board verification
+; Program: compute 1+2+...+100 = 5050 (0x13BA)
+;
+; board_top.v latches writedata when aluout==84 => display shows 0x13BA
+;
+; Word | Byte | Machine Code | Assembly
+; -----+------+--------------+------------------------------------------
+;   0  | 0x00 | 20080001     | addi $t0,$zero,1     $t0=1 (loop var i)
+;   1  | 0x04 | 20100000     | addi $s0,$zero,0     $s0=0 (accumulator)
+;   2  | 0x08 | 20090065     | addi $t1,$zero,101   $t1=101 (bound)
+;   3  | 0x0c | 02088020     | add  $s0,$s0,$t0     sum+=i     <- LOOP
+;   4  | 0x10 | 21080001     | addi $t0,$t0,1       i++
+;   5  | 0x14 | 11090001     | beq  $t0,$t1,+1      i==101? skip j
+;   6  | 0x18 | 08000003     | j    3               goto LOOP
+;   7  | 0x1c | ac100054     | sw   $s0,84($zero)   mem[84]=5050 => display
+;   8  | 0x20 | 08000008     | j    8               HALT (jump to self)
+; =============================================================
+memory_initialization_radix=16;
+memory_initialization_vector=
+20080001
+20100000
+20090065
+02088020
+21080001
+11090001
+08000003
+ac100054
+08000008;

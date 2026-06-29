@@ -1,0 +1,29 @@
+; sum1to100_v2.coe - 重排指令避免数据冒险
+; $1=sum, $2=i, $3=100
+; 
+; 原程序存在 add依赖addi 的EX-EX冒险（差一拍）
+; 重排后：先i++，再sum+=i，slt检查，beq跳转
+; 这样add执行时，addi已经在MEM阶段，可以正确前推
+;
+; addi $1, $0, 0      # sum=0
+; addi $2, $0, 0      # i=0  (从0开始，先i++再加)
+; addi $3, $0, 100    # limit=100
+; loop:
+;   addi $2, $2, 1    # i++
+;   add  $1, $1, $2   # sum += i
+;   slt  $4, $3, $2   # $4 = (100 < i)
+;   beq  $4, $0, loop # if i<=100, continue
+; sw $1, 0($0)        # 存结果
+; end: j end
+
+memory_initialization_radix = 16;
+memory_initialization_vector =
+20010000,
+20020000,
+20030064,
+20420001,
+00220820,
+0062202a,
+1080fffc,
+ac010000,
+08000008,

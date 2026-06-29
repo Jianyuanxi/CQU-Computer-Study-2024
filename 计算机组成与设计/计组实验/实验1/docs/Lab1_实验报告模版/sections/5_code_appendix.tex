@@ -1,0 +1,105 @@
+\appendix
+\section{ALU代码}
+\begin{lstlisting}[language=Verilog]
+`timescale 1ns / 1ps
+// ALU模块
+// 支持操作：000=A+B, 001=A-B, 010=A AND B, 011=A OR B, 100=NOT A, 101=SLT
+
+module alu(
+    input  wire [31:0] num1,
+    input  wire [31:0] num2,
+    input  wire [2:0]  op,
+    output wire        zero,
+    output wire [31:0] result
+);
+    assign result = (op == 3'b000) ? num1 + num2 :
+                    (op == 3'b001) ? num1 - num2 :
+                    (op == 3'b010) ? num1 & num2 :
+                    (op == 3'b011) ? num1 | num2 :
+                    (op == 3'b100) ? ~num1 :
+                    (op == 3'b101) ? ($signed(num1) < $signed(num2)
+                                      ? 32'd1 : 32'd0) :
+                    32'h00000000;
+
+    assign zero = (result == 32'h0) ? 1'b1 : 1'b0;
+
+endmodule
+\end{lstlisting}
+
+\section{32bit流水线全加器代码}
+注：本模块实现文件按指导书要求命名为 \texttt{stallable\_pipeline\_adder.v}，
+发布包中原始文件名为 \texttt{pipline.v}，内容一致，已在实验中统一使用
+\texttt{stallable\_pipeline\_adder.v} 作为正式提交文件名。
+
+\begin{lstlisting}[language=Verilog]
+`timescale 1ns / 1ps
+// 有阻塞4级流水线32bit全加器
+// 文件名：stallable_pipeline_adder.v
+// 每级负责8bit加法，支持各级独立的暂停(stop)与刷新(reset)
+
+module pipline(
+    input  [31:0] cin_a,
+    input  [31:0] cin_b,
+    input         c_in,
+    input         clk,
+    input  [3:0]  stop,
+    input  [3:0]  reset,
+    output        c_out,
+    output [31:0] sum_out
+);
+    reg c_out;
+    reg c_out_t1, c_out_t2, c_out_t3;
+    reg [31:0] sum_out;
+    reg  [7:0] sum_out_t1;
+    reg [15:0] sum_out_t2;
+    reg [23:0] sum_out_t3;
+
+    // 第1级：计算 cin_a[7:0] + cin_b[7:0]
+    always @(posedge clk) begin
+        if (reset[0])
+            sum_out_t1 <= 0;
+        else if (stop[0])
+            sum_out_t1 <= sum_out_t1;
+        else
+            {c_out_t1, sum_out_t1} <= {1'b0, cin_a[7:0]}
+                                     + {1'b0, cin_b[7:0]} + c_in;
+    end
+
+    // 第2级：计算 cin_a[15:8] + cin_b[15:8] + 上级进位
+    always @(posedge clk) begin
+        if (reset[1])
+            sum_out_t2 <= 0;
+        else if (stop[1])
+            sum_out_t2 <= sum_out_t2;
+        else
+            {c_out_t2, sum_out_t2} <= {{1'b0, cin_a[15:8]}
+                                      + {1'b0, cin_b[15:8]}
+                                      + c_out_t1, sum_out_t1};
+    end
+
+    // 第3级：计算 cin_a[23:16] + cin_b[23:16] + 上级进位
+    always @(posedge clk) begin
+        if (reset[2])
+            sum_out_t3 <= 0;
+        else if (stop[2])
+            sum_out_t3 <= sum_out_t3;
+        else
+            {c_out_t3, sum_out_t3} <= {{1'b0, cin_a[23:16]}
+                                      + {1'b0, cin_b[23:16]}
+                                      + c_out_t2, sum_out_t2};
+    end
+
+    // 第4级：计算 cin_a[31:24] + cin_b[31:24] + 上级进位
+    always @(posedge clk) begin
+        if (reset[3])
+            sum_out <= 0;
+        else if (stop[3])
+            sum_out <= sum_out;
+        else
+            {c_out, sum_out} <= {{1'b0, cin_a[31:24]}
+                                + {1'b0, cin_b[31:24]}
+                                + c_out_t3, sum_out_t3};
+    end
+
+endmodule
+\end{lstlisting}

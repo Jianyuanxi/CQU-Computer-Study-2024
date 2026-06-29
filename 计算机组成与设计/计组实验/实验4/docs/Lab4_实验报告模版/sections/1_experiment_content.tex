@@ -1,0 +1,12 @@
+\section{实验内容}
+
+阅读实验原理，在实验三单周期MIPS CPU基础上实现以下模块：
+
+\begin{enumerate}[(1)]
+    \item \textbf{Datapath（数据通路）}：将单周期电路按取指（IF）、译码（ID）、执行（EX）、访存（MEM）、回写（WB）五个阶段分段，加入PC、IF/ID、ID/EX、EX/MEM、MEM/WB共五组级间寄存器；将EX阶段ALU输入端的二选一选择器mux2升级为三选一选择器mux3，用于实现MEM和WB阶段的数据前推。
+    \item \textbf{各类触发器}：实现带异步复位的flopr（用于EX/MEM、MEM/WB级间寄存器）、带使能的flopenr（用于PC寄存器）、带清零的floprc（用于ID/EX级间寄存器）、带使能与清零的flopenrc（用于IF/ID级间寄存器），用以支持流水线暂停（stall）和气泡插入（flush）。
+    \item \textbf{Controller（控制器）}：main decoder与alu decoder可直接复用实验三，控制信号在ID阶段生成后，通过三组流水线寄存器（ID→EX的floprc、EX→MEM的flopr、MEM→WB的flopr）逐级传递到使用阶段。
+    \item \textbf{Hazard（冒险处理模块）}：自行实现，负责检测数据冒险并生成前推选择信号（forwardAE/BE）与暂停信号（stallF/stallD/flushE）；本设计将beq判断置于EX阶段，控制冒险通过datapath内部的flushD信号直接冲刷IF/ID寄存器解决，不需要单独的branchstall和ID级前推。
+    \item \textbf{指令存储器与数据存储器}：仿真阶段使用行为级RAM（imem/dmem，通过\texttt{\$readmemh}读取hex指令文件）；上板阶段使用Block Memory Generator IP核，32位宽、256深度。
+    \item \textbf{验证程序}：编写汇编程序计算1+2+\ldots+100=5050，将结果存入数据存储器地址0；行为仿真在波形中观察累加过程，最终在testbench中检测``dataadr=0且writedata=5050''，控制台打印``Simulation succeeded''。
+\end{enumerate}

@@ -1,0 +1,16 @@
+\section{实验过程记录}
+
+\subsection{问题1：Block Memory IP配置错误}
+\textbf{问题描述：}初次配置Block Memory Generator时，将Memory Type误选为Single Port RAM而非ROM，且勾选了Generate address interface with 32 bits，导致IP生成的addra端口为32位，与top模块中的pc[9:2]（8位）不匹配，仿真时出现位宽不一致警告，指令读出异常。
+
+\textbf{解决方案：}重新打开IP配置，将Memory Type改为Single Port ROM，取消勾选Generate address interface with 32 bits，将Port A Depth设置为256，使地址线正确生成为8位，重新Generate后位宽匹配，警告消除。
+
+\subsection{问题2：仿真时钟分频器未能正常工作}
+\textbf{问题描述：}clk\_div模块将100MHz分频为1Hz，需计数50000000个周期，仿真时即使运行50us也远不足以产生一次lclk翻转，导致PC始终为x，无法观察到有效的指令读取。
+
+\textbf{解决方案：}在clk\_div模块中使用parameter参数SIM\_MODE，仿真时传入SIM\_MODE=1使MAX=4（每5个时钟周期翻转一次lclk），上板时传入SIM\_MODE=0使MAX=49999999。同时在仿真testbench中直接例化pc、blk\_mem\_gen\_0和controller模块，绕开clk\_div，使用testbench自身的20ns时钟直接驱动，从而顺利观察到指令读取过程。
+
+\subsection{问题3：COE文件路径含中文导致加载失败}
+\textbf{问题描述：}将coe文件放置在含中文字符的路径下，Vivado验证IP参数时报错"No COE file loaded"，IP配置无法保存。
+
+\textbf{解决方案：}将inst\_ram.coe复制到无中文、无空格的路径（C:/coe/inst\_ram.coe），重新在IP配置中指定该路径，问题解决。

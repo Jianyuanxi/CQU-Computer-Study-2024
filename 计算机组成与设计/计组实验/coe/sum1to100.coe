@@ -1,0 +1,12 @@
+; sum1to100.coe -- 1加到100累加程序
+memory_initialization_radix = 16;
+memory_initialization_vector =
+20010000,
+20020001,
+20030064,
+00220820,
+20420001,
+0062202a,
+1080fffc,
+ac010000,
+08000008;
